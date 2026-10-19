@@ -1,0 +1,34 @@
+{% extends "home/base.html" %}
+
+{% block title %}Privacy Policy | Plantify{% endblock %}
+
+{% block body %}
+<section class="py-14 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
+    <div class="border-b border-gray-200 pb-5">
+        <h1 class="text-3xl font-extrabold text-gray-900 font-playfair">Privacy Policy</h1>
+        <p class="text-xs text-gray-500 mt-1">Last updated: January 2026</p>
+    </div>
+
+    <div class="prose prose-sm max-w-none text-gray-600 space-y-6 text-sm leading-relaxed bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <h3 class="text-base font-bold text-gray-900">1. Information We Collect</h3>
+        <p>
+            When you use Plantify, we collect the room images you upload to perform computer vision analysis, detect lighting parameters, and generate plant placement models. If you create an account, we collect your name, email address, username, and interior plant preferences.
+        </p>
+
+        <h3 class="text-base font-bold text-gray-900">2. How We Use Image Data</h3>
+        <p>
+            Your uploaded photos are processed exclusively to measure natural illumination, identify surface bounding boxes, and synthesize photorealistic preview transformations using AI. We never sell your photos or private room images to third-party data brokers.
+        </p>
+
+        <h3 class="text-base font-bold text-gray-900">3. Data Retention & Deletion</h3>
+        <p>
+            You have full ownership of your data. You may delete any saved room scan or permanently delete your entire Plantify account at any time from your Account Settings page.
+        </p>
+
+        <h3 class="text-base font-bold text-gray-900">4. Contact</h3>
+        <p>
+            If you have questions regarding this privacy policy, please contact us at <a href="mailto:privacy@plantify.ai" class="text-emerald-700 underline">privacy@plantify.ai</a>.
+        </p>
+    </div>
+</section>
+{% endblock body %}

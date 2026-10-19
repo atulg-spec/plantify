@@ -1,0 +1,29 @@
+{% extends "home/base.html" %}
+
+{% block title %}Refund Policy | Plantify{% endblock %}
+
+{% block body %}
+<section class="py-14 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
+    <div class="border-b border-gray-200 pb-5">
+        <h1 class="text-3xl font-extrabold text-gray-900 font-playfair">Refund Policy</h1>
+        <p class="text-xs text-gray-500 mt-1">Last updated: January 2026</p>
+    </div>
+
+    <div class="prose prose-sm max-w-none text-gray-600 space-y-6 text-sm leading-relaxed bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+        <h3 class="text-base font-bold text-gray-900">1. Free Community Tier</h3>
+        <p>
+            Plantify currently offers free room scan analyses, automated plant placement, and basic visual previews to all registered users without subscription fees.
+        </p>
+
+        <h3 class="text-base font-bold text-gray-900">2. Premium AI Renders & High-Res Downloads</h3>
+        <p>
+            Any optional premium credit purchases made for high-volume batch processing or ultra-high-definition generative rendering are eligible for a full refund within 14 days if the AI engine fails to process your image successfully.
+        </p>
+
+        <h3 class="text-base font-bold text-gray-900">3. Support</h3>
+        <p>
+            Contact our billing support team at <a href="mailto:support@plantify.ai" class="text-emerald-700 underline">support@plantify.ai</a> for any inquiries.
+        </p>
+    </div>
+</section>
+{% endblock body %}

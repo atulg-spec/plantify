@@ -1,0 +1,496 @@
+{% extends 'home/base.html' %}
+{% block title %}Plantify | AI Space & Plant Analyzer{% endblock %}
+
+{% block body %}
+<div class="bg-slate-50/60 min-h-screen py-6 px-3 sm:px-6 lg:px-8">
+    <div class="max-w-xl mx-auto space-y-6">
+        
+        <!-- Header Banner -->
+        <div class="text-center pt-2 pb-1">
+            <span class="inline-flex items-center px-3 py-1 bg-green-100 text-primary text-xs font-semibold rounded-full mb-2">
+                <i class="fas fa-sparkles mr-1.5 text-xs text-green-600"></i> AI Green Designer
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                Analyze Space for Plants
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                Upload a room photo to discover optimal plants, computer vision zones, and interior placement.
+            </p>
+        </div>
+
+        <!-- Main Compact Form Card -->
+        {% if user.is_authenticated %}
+        <div class="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3 sm:px-4 sm:py-2.5 flex items-center justify-between gap-3 text-xs text-emerald-900 shadow-xs">
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="fas fa-check-circle text-emerald-600 text-sm shrink-0"></i>
+                <span class="truncate text-xs font-medium">
+                    Cloud Sync: Saving to <strong class="font-bold text-emerald-950">{{ user.first_name|default:user.username }}</strong>
+                </span>
+            </div>
+            <a href="{% url 'dashboard:index' %}" class="shrink-0 text-emerald-800 hover:text-emerald-950 font-bold underline text-xs flex items-center gap-1">
+                <span>My Spaces</span>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+        {% else %}
+        <div class="bg-forest-50/90 border border-forest-100 rounded-2xl p-3 sm:px-4 sm:py-2.5 flex items-center justify-between gap-3 text-xs text-forest-900 shadow-xs">
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="fas fa-info-circle text-emerald-600 text-sm shrink-0"></i>
+                <span class="truncate text-xs font-medium">
+                    Guest Mode &bull; Scans won't be saved to a profile
+                </span>
+            </div>
+            <a href="{% url 'accounts:login' %}?next={% url 'utility:upload' %}" class="shrink-0 text-emerald-800 hover:text-forest-950 font-bold underline text-xs flex items-center gap-1">
+                <span>Sign in</span>
+                <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 transition-all duration-300">
+            <form id="spaceUploadForm" action="/utility/upload/" method="POST" enctype="multipart/form-data" class="space-y-5" novalidate>
+                {% csrf_token %}
+                
+                <!-- STEP 1: Compact Image Upload Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-bold text-gray-900 flex items-center">
+                            <span class="w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center mr-2">1</span>
+                            Upload Room Photo <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <span class="text-[11px] text-gray-400">JPG, PNG, WEBP &lt;10MB</span>
+                    </div>
+                    
+                    <!-- Compact Dropzone -->
+                    <div id="dropzone" class="border border-dashed border-green-300 hover:border-primary bg-green-50/30 hover:bg-green-50/60 transition-all duration-200 rounded-xl p-4 text-center cursor-pointer relative group">
+                        <input type="file" id="imageInput" name="image" accept="image/png, image/jpeg, image/webp" class="hidden">
+                        
+                        <!-- Initial Prompt State -->
+                        <div id="dropzonePrompt" class="flex flex-col items-center justify-center py-2 space-y-2">
+                            <div class="w-10 h-10 bg-green-100/80 rounded-full flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+                                <i class="fas fa-camera text-lg"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">
+                                <span class="text-primary font-bold">Tap to choose photo</span> or drop file here
+                            </div>
+                        </div>
+
+                        <!-- Compact Live Image Preview -->
+                        <div id="imagePreviewWrapper" class="hidden relative max-w-xs mx-auto overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                            <img id="imagePreview" src="" alt="Room Preview" class="w-full h-44 object-cover">
+                            <div id="scanLine" class="hidden absolute left-0 top-0 w-full h-1 bg-green-400 shadow-[0_0_12px_#22c55e] animate-pulse"></div>
+                            
+                            <div class="absolute bottom-1.5 left-1.5 right-1.5 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 text-[11px] rounded flex items-center justify-between">
+                                <span id="imageDetails" class="truncate max-w-[170px]">Photo loaded</span>
+                                <span class="text-green-400 font-medium flex items-center"><i class="fas fa-check-circle mr-1"></i> Ready</span>
+                            </div>
+                            
+                            <button type="button" id="removeImageBtn" class="absolute top-2 right-2 bg-red-600/90 hover:bg-red-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p id="imageError" class="mt-1.5 text-xs text-red-600 font-medium hidden">
+                        <i class="fas fa-exclamation-circle mr-1"></i> Please upload a valid image file.
+                    </p>
+                </div>
+
+                <!-- PROGRESSIVE DISCLOSURE CONTAINER: Revealed AFTER Image Upload -->
+                <div id="progressiveFieldsContainer" class="hidden space-y-5 pt-2 border-t border-gray-100 animate-fadeIn">
+                    
+                    <!-- STEP 2: Budget Pill Selector -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-bold text-gray-900 flex items-center">
+                                <span class="w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center mr-2">2</span>
+                                Budget Level <span class="text-red-500 ml-1">*</span>
+                            </label>
+                            <span class="text-[11px] text-gray-400">Select tier</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2" id="budgetGroup">
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="budget" value="Low" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-primary">Low</div>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="budget" value="Medium" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-primary">Medium</div>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="budget" value="High" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-primary">High</div>
+                            </label>
+                        </div>
+                        <p id="budgetError" class="mt-1 text-xs text-red-600 font-medium hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please select a budget.
+                        </p>
+                    </div>
+
+                    <!-- STEP 3: Maintenance Preference Selector -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-bold text-gray-900 flex items-center">
+                                <span class="w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center mr-2">3</span>
+                                Maintenance Preference <span class="text-red-500 ml-1">*</span>
+                            </label>
+                            <span class="text-[11px] text-gray-400">Care effort</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2" id="maintenanceGroup">
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="maintenance" value="Low" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-blue-600">Low</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">2-3 wks</div>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="maintenance" value="Medium" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-blue-600">Medium</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">Weekly</div>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-lg p-2.5 text-center hover:border-green-500 transition-all bg-white selection-pill">
+                                <input type="radio" name="maintenance" value="High" class="hidden peer">
+                                <div class="text-xs font-bold text-gray-800 peer-checked:text-blue-600">High</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">Frequent</div>
+                            </label>
+                        </div>
+                        <p id="maintenanceError" class="mt-1 text-xs text-red-600 font-medium hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please select a maintenance preference.
+                        </p>
+                    </div>
+
+                    <!-- STEP 4: Style Selector Chips -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-bold text-gray-900 flex items-center">
+                                <span class="w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center mr-2">4</span>
+                                Preferred Style <span class="text-red-500 ml-1">*</span>
+                            </label>
+                            <span class="text-[11px] text-gray-400">Room aesthetic</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-1.5" id="styleGroup">
+                            <label class="cursor-pointer border border-gray-200 rounded-full px-3 py-1.5 text-center hover:border-green-500 transition-all bg-white selection-chip">
+                                <input type="radio" name="style" value="Minimal" class="hidden peer">
+                                <span class="text-xs font-medium text-gray-700 peer-checked:font-bold">Minimal</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-full px-3 py-1.5 text-center hover:border-green-500 transition-all bg-white selection-chip">
+                                <input type="radio" name="style" value="Modern" class="hidden peer">
+                                <span class="text-xs font-medium text-gray-700 peer-checked:font-bold">Modern</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-full px-3 py-1.5 text-center hover:border-green-500 transition-all bg-white selection-chip">
+                                <input type="radio" name="style" value="Boho" class="hidden peer">
+                                <span class="text-xs font-medium text-gray-700 peer-checked:font-bold">Boho</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-full px-3 py-1.5 text-center hover:border-green-500 transition-all bg-white selection-chip">
+                                <input type="radio" name="style" value="Traditional" class="hidden peer">
+                                <span class="text-xs font-medium text-gray-700 peer-checked:font-bold">Traditional</span>
+                            </label>
+
+                            <label class="cursor-pointer border border-gray-200 rounded-full px-3 py-1.5 text-center hover:border-green-500 transition-all bg-white selection-chip">
+                                <input type="radio" name="style" value="No preference" class="hidden peer">
+                                <span class="text-xs font-medium text-gray-700 peer-checked:font-bold">No preference</span>
+                            </label>
+                        </div>
+                        <p id="styleError" class="mt-1 text-xs text-red-600 font-medium hidden">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please select a preferred style.
+                        </p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-3">
+                        <button type="submit" id="submitBtn" class="w-full bg-primary hover:bg-green-800 text-white font-bold text-sm py-3 px-6 rounded-xl shadow hover:shadow-md transition-all duration-200 flex items-center justify-center space-x-2 group">
+                            <span>✨ Run Plantify AI Analysis</span>
+                            <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+
+        <!-- AI Scanning Modal -->
+        <div id="aiScanningModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+            <div class="bg-white rounded-2xl max-w-xs sm:max-w-md w-full p-6 text-center shadow-2xl relative border border-green-200">
+                <div class="w-16 h-16 mx-auto relative mb-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-green-200 border-t-primary animate-spin"></div>
+                    <div class="absolute inset-2 bg-green-50 rounded-full flex items-center justify-center text-primary text-xl">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-1">Your Room Is Getting Its Glow-Up</h3>
+                <p id="scanningStatusText" class="text-xs font-medium text-gray-500 mb-4">
+                    Checking the vibes, judging the lighting, and finding plants that won’t ghost you 🌱💀
+                </p>
+                
+                <div class="w-full bg-gray-100 rounded-full h-1.5 mb-3 overflow-hidden">
+                    <div id="scanningProgressBar" class="bg-primary h-full w-0 transition-all duration-300"></div>
+                </div>
+                <div class="text-[11px] text-gray-400 font-mono" id="scanningProgressPercentage">0% Completed</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .selection-pill:has(input:checked) {
+        border-color: #14532d !important;
+        background-color: #f0fdf4 !important;
+        box-shadow: 0 2px 8px rgba(20, 83, 45, 0.12) !important;
+    }
+    .selection-chip:has(input:checked) {
+        border-color: #14532d !important;
+        background-color: #14532d !important;
+        color: white !important;
+    }
+    .selection-chip:has(input:checked) span {
+        color: white !important;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.35s ease-out forwards;
+    }
+</style>
+
+<script>
+/**
+ * Main function analyse - receives validated inputs and performs AI analysis.
+ * Stores result in session and redirects to the dedicated /utility/result/ page.
+ * 
+ * @param {File|null} imageFile - Validated uploaded image file
+ * @param {string} budget - Validated budget ('Low', 'Medium', 'High')
+ * @param {string} maintenance - Validated maintenance ('Low', 'Medium', 'High')
+ * @param {string} style - Validated style ('Minimal', 'Modern', 'Boho', 'Traditional', 'No preference')
+ */
+function analyse(imageFile, budget, maintenance, style) {
+    console.log("Function analyse called with validated inputs:", {
+        image: imageFile ? imageFile.name : "Uploaded Image",
+        budget: budget,
+        maintenance: maintenance,
+        style: style
+    });
+
+    const modal = document.getElementById('aiScanningModal');
+    const progressBar = document.getElementById('scanningProgressBar');
+    const progressText = document.getElementById('scanningProgressPercentage');
+    const statusText = document.getElementById('scanningStatusText');
+
+    modal.classList.remove('hidden');
+
+    const steps = [
+        { pct: 25, text: "Reading image pixels & computing lighting histogram..." },
+        { pct: 50, text: "Visuaising & Identifying objects..." },
+        { pct: 75, text: "Identifying empty placement zones & ranking species..." },
+        { pct: 100, text: "Opening Analysis Result Page..." }
+    ];
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            const step = steps[currentStep];
+            progressBar.style.width = step.pct + '%';
+            progressText.innerText = step.pct + '% Completed';
+            statusText.innerText = step.text;
+            currentStep++;
+        } else {
+            clearInterval(interval);
+            
+            const formData = new FormData();
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            formData.append('budget', budget);
+            formData.append('maintenance', maintenance);
+            formData.append('style', style);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('/utility/upload/', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = '/utility/result/';
+                }
+            })
+            .catch(err => {
+                console.warn("Backend AJAX call notice, submitting standard form:", err);
+                document.getElementById('spaceUploadForm').submit();
+            });
+        }
+    }, 250);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const dropzone = document.getElementById('dropzone');
+    const imageInput = document.getElementById('imageInput');
+    const dropzonePrompt = document.getElementById('dropzonePrompt');
+    const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    const imageDetails = document.getElementById('imageDetails');
+    const imageError = document.getElementById('imageError');
+    
+    const progressiveContainer = document.getElementById('progressiveFieldsContainer');
+    const budgetError = document.getElementById('budgetError');
+    const maintenanceError = document.getElementById('maintenanceError');
+    const styleError = document.getElementById('styleError');
+    const form = document.getElementById('spaceUploadForm');
+
+    dropzone.addEventListener('click', (e) => {
+        if (e.target !== removeImageBtn && !removeImageBtn.contains(e.target)) {
+            imageInput.click();
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('border-primary', 'bg-green-100/40');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('border-primary', 'bg-green-100/40');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+            imageInput.files = files;
+            handleImageSelected(files[0]);
+        }
+    });
+
+    imageInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            handleImageSelected(this.files[0]);
+        }
+    });
+
+    removeImageBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        imageInput.value = '';
+        imagePreview.src = '';
+        imagePreviewWrapper.classList.add('hidden');
+        dropzonePrompt.classList.remove('hidden');
+        imageError.classList.add('hidden');
+        
+        progressiveContainer.classList.add('hidden');
+    });
+
+    function handleImageSelected(file) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            imageError.innerText = 'File must be a JPG, PNG, or WEBP image.';
+            imageError.classList.remove('hidden');
+            progressiveContainer.classList.add('hidden');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            imageError.innerText = 'Image size must be less than 10MB.';
+            imageError.classList.remove('hidden');
+            progressiveContainer.classList.add('hidden');
+            return;
+        }
+
+        imageError.classList.add('hidden');
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+            dropzonePrompt.classList.add('hidden');
+            imagePreviewWrapper.classList.remove('hidden');
+            imageDetails.innerText = `${file.name}`;
+            
+            progressiveContainer.classList.remove('hidden');
+            
+            setTimeout(() => {
+                progressiveContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 150);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let isValid = true;
+
+        const file = imageInput.files[0];
+        if (!file && imagePreviewWrapper.classList.contains('hidden')) {
+            imageError.innerText = 'Please select or upload a photo of your space.';
+            imageError.classList.remove('hidden');
+            isValid = false;
+        } else {
+            imageError.classList.add('hidden');
+        }
+
+        const budgetSelected = document.querySelector('input[name="budget"]:checked');
+        if (!budgetSelected) {
+            budgetError.classList.remove('hidden');
+            isValid = false;
+        } else {
+            budgetError.classList.add('hidden');
+        }
+
+        const maintenanceSelected = document.querySelector('input[name="maintenance"]:checked');
+        if (!maintenanceSelected) {
+            maintenanceError.classList.remove('hidden');
+            isValid = false;
+        } else {
+            maintenanceError.classList.add('hidden');
+        }
+
+        const styleSelected = document.querySelector('input[name="style"]:checked');
+        if (!styleSelected) {
+            styleError.classList.remove('hidden');
+            isValid = false;
+        } else {
+            styleError.classList.add('hidden');
+        }
+
+        if (!isValid) {
+            const firstError = document.querySelector('.text-red-600:not(.hidden)');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        const validatedImage = file || null;
+        const validatedBudget = budgetSelected.value;
+        const validatedMaintenance = maintenanceSelected.value;
+        const validatedStyle = styleSelected.value;
+
+        analyse(validatedImage, validatedBudget, validatedMaintenance, validatedStyle);
+    });
+});
+</script>
+{% endblock body %}

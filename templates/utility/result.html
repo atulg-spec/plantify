@@ -1,0 +1,1455 @@
+{% extends 'home/base.html' %}
+{% block title %}Plantify | AI Botanical Consultation & Space Analysis{% endblock %}
+
+{% block body %}
+<div class="bg-slate-50/70 min-h-screen py-4 sm:py-8 px-3 sm:px-6 lg:px-8 pb-24 sm:pb-12">
+    <div class="max-w-5xl mx-auto space-y-6 sm:space-y-8">
+        
+        <!-- 1. Top Action Bar (Mobile Stack, Desktop Row) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white sm:bg-transparent p-3 sm:p-0 rounded-2xl sm:rounded-none border sm:border-0 border-gray-100 shadow-sm sm:shadow-none">
+            <div class="flex items-center justify-between sm:justify-start gap-2.5">
+                <a href="{% url 'utility:upload' %}" class="inline-flex items-center text-xs font-bold text-gray-700 hover:text-primary transition-colors bg-white px-3 py-2 sm:py-1.5 rounded-xl border border-gray-200 shadow-sm active:scale-95">
+                    <i class="fas fa-arrow-left mr-1.5 text-xs text-primary"></i>
+                    <span>Scan Another Room</span>
+                </a>
+                
+                <span class="text-[11px] text-gray-400 font-mono sm:hidden truncate max-w-[140px]" id="resResolutionMobile">
+                    {{ analysis.resolution|default:"Analyzed Space" }}
+                </span>
+            </div>
+
+            <!-- Sync / Auth Status Badge -->
+            <div class="flex items-center justify-between sm:justify-end gap-2 text-xs">
+                {% if saved %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 text-[11px] sm:text-xs font-semibold rounded-full border border-emerald-200">
+                    <i class="fas fa-check-circle text-emerald-600"></i>
+                    Saved to Dashboard
+                </span>
+                <a href="{% url 'dashboard:index' %}" class="font-bold text-forest-800 hover:text-emerald-600 underline text-xs">
+                    View Spaces &rarr;
+                </a>
+                {% elif not user.is_authenticated %}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 text-[11px] sm:text-xs font-medium rounded-full border border-amber-200">
+                    <i class="fas fa-info-circle text-amber-600"></i>
+                    Guest Consultation Preview
+                </span>
+                <a href="{% url 'accounts:register' %}" class="font-bold text-emerald-700 hover:text-emerald-800 underline text-xs">
+                    Sign up to save
+                </a>
+                {% endif %}
+
+                <span class="hidden sm:inline-block text-xs text-gray-400 font-mono" id="resResolution">
+                    {{ analysis.resolution|default:"Image Analyzed" }}
+                </span>
+            </div>
+        </div>
+
+        {% if blurred and not user.is_authenticated %}
+        <!-- Guest Mode Invitation Banner -->
+        <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <i class="fas fa-seedling text-base"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-emerald-950">You're viewing an interactive plant consultation preview</h3>
+                    <p class="text-xs text-emerald-800 mt-0.5">Create a free Plantify account to save your space blueprints, monitor care routines, and export botanical guides.</p>
+                </div>
+            </div>
+            <a href="{% url 'accounts:register' %}" class="shrink-0 px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs rounded-xl shadow transition active:scale-95">
+                Create Free Account
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- 2. Result Header Banner -->
+        <div class="bg-gradient-to-br from-primary via-forest-900 to-forest-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+            <div class="relative z-10 space-y-2 max-w-xl">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 bg-green-500/20 text-emerald-300 text-[10px] sm:text-xs font-semibold rounded-full border border-emerald-400/30">
+                        <i class="fas fa-sparkles mr-1.5 text-[10px]"></i> AI Botanist & Design Consultation
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 bg-white/10 text-white/90 text-[10px] sm:text-xs font-medium rounded-full border border-white/15">
+                        {{ analysis.image_name|default:"Analyzed Room" }}
+                    </span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight font-playfair">
+                    Your Botanical Space Blueprint
+                </h1>
+                <p class="text-emerald-100/90 text-xs sm:text-sm leading-relaxed">
+                    Personalized species curation, architectural placement mapping, and evidence-based care intelligence calibrated for your lighting and lifestyle.
+                </p>
+            </div>
+            
+            <!-- Quick Metrics Box -->
+            <div class="relative z-10 grid grid-cols-2 gap-3 w-full md:w-auto bg-white/10 backdrop-blur-md p-3 sm:px-6 sm:py-3.5 rounded-2xl border border-white/15 text-center">
+                <div class="px-2">
+                    <div class="text-[10px] sm:text-xs text-emerald-200 uppercase font-bold tracking-wider">Suitability</div>
+                    <div class="text-xl sm:text-3xl font-black text-white mt-0.5">
+                        {{ analysis.scores.overall_compatibility|default:"94%" }}
+                    </div>
+                </div>
+                <div class="border-l border-white/20 px-2">
+                    <div class="text-[10px] sm:text-xs text-emerald-200 uppercase font-bold tracking-wider">Natural Light</div>
+                    <div class="text-xl sm:text-3xl font-black text-white mt-0.5">
+                        {{ analysis.lighting.natural_light_prob|default:"Medium" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% csrf_token %}
+
+        <!-- ============================================================ -->
+        <!-- SECTION 1: YOUR GREEN SPACE ANALYSIS -->
+        <!-- ============================================================ -->
+        <section id="green-space-analysis" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4 sm:space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 font-playfair flex items-center gap-2">
+                        <i class="fas fa-camera-retro text-emerald-700 text-sm"></i>
+                        <span>1. Your Green Space Analysis</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Interactive visual analysis mapping room boundaries, light ingress, and placement capacity.</p>
+                </div>
+                <span class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 w-fit">
+                    {{ analysis.scores.space_utilization|default:"Strategic Placement Zones" }}
+                </span>
+            </div>
+
+            <!-- Carousel Navigation Tabs Header -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <div class="flex items-center space-x-1 sm:space-x-1.5 bg-slate-100/90 p-1 rounded-xl sm:rounded-2xl overflow-x-auto no-scrollbar w-full sm:w-auto">
+                    <button type="button" 
+                            id="tabBtnAnnotated"
+                            onclick="switchCarouselTab('annotated')" 
+                            class="carousel-tab-btn flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1.5 bg-white text-emerald-800 shadow-sm border border-gray-200 shrink-0">
+                        <i class="fas fa-crosshairs text-emerald-600 text-xs"></i>
+                        <span>Placement Zones</span>
+                    </button>
+
+                    <button type="button" 
+                            id="tabBtnTransformed"
+                            onclick="switchCarouselTab('transformed')" 
+                            class="carousel-tab-btn flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 transition-all duration-200 flex items-center justify-center space-x-1.5 shrink-0">
+                        <i class="fas fa-wand-magic-sparkles text-purple-600 text-xs"></i>
+                        <span>AI Makeover</span>
+                        <span id="transformedBadge" class="ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 animate-pulse font-semibold">
+                            Loading...
+                        </span>
+                    </button>
+
+                    <button type="button" 
+                            id="tabBtnOriginal"
+                            onclick="switchCarouselTab('original')" 
+                            class="carousel-tab-btn flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 transition-all duration-200 flex items-center justify-center space-x-1.5 shrink-0">
+                        <i class="fas fa-image text-blue-500 text-xs"></i>
+                        <span>Original Photo</span>
+                    </button>
+                </div>
+
+                <!-- Helper Hint -->
+                <div class="flex items-center justify-between sm:justify-end text-[11px] text-gray-400 font-medium px-1 sm:px-0">
+                    <span class="sm:hidden flex items-center gap-1">
+                        <i class="fas fa-expand text-primary"></i> Tap photo to maximize
+                    </span>
+                    <span class="hidden sm:inline-flex items-center gap-1">
+                        <i class="fas fa-mouse text-primary"></i> Hover to magnify • Click to maximize
+                    </span>
+                </div>
+            </div>
+
+            <!-- Slide 1: Annotated Image (AI Placement Bounding) -->
+            <div id="slideAnnotated" class="carousel-slide relative">
+                <div class="magnify-wrapper relative overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-slate-900 cursor-pointer sm:cursor-crosshair transition-all duration-300 hover:shadow-lg min-h-[240px] sm:min-h-[380px] flex items-center justify-center"
+                     onclick="openLightbox('{{ analysis.annotated_image_url|default:'' }}', 'Annotated Room Space Analysis')">
+                    {% if analysis.annotated_image_url %}
+                    <img id="mainAnnotatedImg" 
+                         src="{{ analysis.annotated_image_url|default:'' }}" 
+                         alt="Annotated Room Analysis" 
+                         class="magnify-img w-full h-auto max-h-[340px] sm:max-h-[500px] object-contain mx-auto transition-transform duration-150 ease-out">
+                    {% else %}
+                    <div class="p-8 text-center text-gray-400">
+                        <i class="fas fa-image text-3xl mb-2 block"></i>
+                        <span class="text-xs">Room image processing complete</span>
+                    </div>
+                    {% endif %}
+                    <span class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg pointer-events-none">
+                        <i class="fas fa-magic text-emerald-400 mr-1"></i> Placement Zones
+                    </span>
+                </div>
+            </div>
+
+            <!-- Slide 2: AI Transformed Image (With AJAX Loader State) -->
+            <div id="slideTransformed" class="carousel-slide relative hidden">
+                <div id="transformedLoadingState" class="w-full min-h-[260px] sm:min-h-[420px] bg-slate-900 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center text-white space-y-3 sm:space-y-4">
+                    <div class="relative flex items-center justify-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
+                        <i class="fas fa-wand-magic-sparkles text-purple-400 text-lg sm:text-xl absolute animate-pulse"></i>
+                    </div>
+                    <div class="space-y-1 max-w-sm px-2">
+                        <h4 class="text-xs sm:text-sm font-bold text-gray-100">Generating Photorealistic AI Makeover</h4>
+                        <p class="text-[11px] sm:text-xs text-gray-400">Cloudflare Workers AI FLUX is styling your room with recommended indoor plants...</p>
+                    </div>
+                    <div class="w-36 sm:w-48 h-1.5 bg-gray-800 rounded-full overflow-hidden relative">
+                        <div class="w-full h-full bg-gradient-to-r from-purple-500 via-emerald-400 to-purple-500 animate-pulse"></div>
+                    </div>
+                </div>
+
+                <div id="transformedImgWrapper" 
+                     class="magnify-wrapper relative overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-slate-900 cursor-pointer sm:cursor-crosshair transition-all duration-300 hover:shadow-lg min-h-[240px] sm:min-h-[380px] flex items-center justify-center hidden"
+                     onclick="openCurrentTabLightbox()">
+                    <img id="mainTransformedImg" 
+                         src="{{ analysis.transformed_image_url|default:'' }}" 
+                         alt="Photorealistic AI Room Makeover" 
+                         class="magnify-img w-full h-auto max-h-[340px] sm:max-h-[500px] object-contain mx-auto transition-transform duration-150 ease-out">
+                    <span class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg pointer-events-none">
+                        <i class="fas fa-wand-magic text-purple-400 mr-1"></i> AI Render
+                    </span>
+                </div>
+
+                <div id="transformedErrorState" class="w-full min-h-[240px] bg-slate-900 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center p-6 text-center text-white space-y-3 hidden">
+                    <i class="fas fa-exclamation-triangle text-amber-400 text-2xl sm:text-3xl"></i>
+                    <h4 class="text-xs sm:text-sm font-bold text-gray-200">AI Transformation Preview Unavailable</h4>
+                    <p id="transformedErrorMessage" class="text-[11px] sm:text-xs text-gray-400 max-w-sm">
+                        Cloudflare Workers AI credentials can be updated in Django Admin.
+                    </p>
+                    <button type="button" onclick="triggerCloudflareTransform()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow transition-colors active:scale-95">
+                        <i class="fas fa-redo mr-1.5"></i> Retry Makeover Render
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide 3: Original Image -->
+            <div id="slideOriginal" class="carousel-slide relative hidden">
+                <div class="magnify-wrapper relative overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-slate-900 cursor-pointer sm:cursor-crosshair transition-all duration-300 hover:shadow-lg min-h-[240px] sm:min-h-[380px] flex items-center justify-center"
+                     onclick="openLightbox('{{ analysis.original_image_url|default:'' }}', 'Original Uploaded Space Photo')">
+                    {% if analysis.original_image_url %}
+                    <img id="mainOriginalImg" 
+                         src="{{ analysis.original_image_url|default:'' }}" 
+                         alt="Original Room Space" 
+                         class="magnify-img w-full h-auto max-h-[340px] sm:max-h-[500px] object-contain mx-auto transition-transform duration-150 ease-out">
+                    {% else %}
+                    <div class="p-8 text-center text-gray-400">
+                        <i class="fas fa-camera text-3xl mb-2 block"></i>
+                        <span class="text-xs">Original photo preview</span>
+                    </div>
+                    {% endif %}
+                    <span class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg pointer-events-none">
+                        <i class="fas fa-camera text-blue-400 mr-1"></i> Original Photo
+                    </span>
+                </div>
+            </div>
+
+            <!-- Environmental Summary Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="bg-slate-50 p-3 rounded-xl border border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Observed Light</span>
+                    <span class="font-bold text-xs sm:text-sm text-gray-900 mt-0.5 block flex items-center gap-1.5">
+                        <i class="fas fa-sun text-amber-500"></i>
+                        {{ analysis.lighting.condition|default:"Medium" }} Light
+                    </span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Daylight Prob.</span>
+                    <span class="font-bold text-xs sm:text-sm text-gray-900 mt-0.5 block flex items-center gap-1.5">
+                        <i class="fas fa-cloud-sun text-blue-500"></i>
+                        {{ analysis.lighting.natural_light_prob|default:"Medium" }}
+                    </span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Identified Zones</span>
+                    <span class="font-bold text-xs sm:text-sm text-gray-900 mt-0.5 block flex items-center gap-1.5">
+                        <i class="fas fa-vector-square text-emerald-600"></i>
+                        {{ analysis.placement_plan|length|default:"3" }} Locations
+                    </span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Space Style</span>
+                    <span class="font-bold text-xs sm:text-sm text-gray-900 mt-0.5 block flex items-center gap-1.5">
+                        <i class="fas fa-couch text-purple-500"></i>
+                        {{ analysis.validated_inputs.style|default:"Modern" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detected Furnishings Tags -->
+            {% if analysis.detected_objects %}
+            <div class="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-bold text-gray-500">Detected Furnishings:</span>
+                {% for label, count in analysis.detected_objects.items %}
+                <span class="px-2.5 py-0.5 bg-green-50 text-emerald-800 border border-green-200/80 text-[11px] font-medium rounded-lg capitalize flex items-center gap-1.5">
+                    <i class="fas fa-cube text-[10px] text-emerald-600"></i>
+                    <span>{{ label }}</span>
+                    <span class="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-1.5 rounded-full">{{ count }}</span>
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 2: RECOMMENDED PLANTS (MEANINGFUL BOTANICAL DATA) -->
+        <!-- ============================================================ -->
+        <section id="recommended-plants" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 border border-gray-100 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 font-playfair flex items-center gap-2">
+                        <i class="fas fa-leaf text-emerald-700 text-sm"></i>
+                        <span>2. Recommended Plants</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Individually curated varieties selected for biological suitability, space enhancement, and lifestyle ease.</p>
+                </div>
+                <span class="px-3 py-1 bg-green-100 text-primary text-xs font-bold rounded-full w-fit shrink-0">
+                    {{ analysis.recommended_plants|length }} Curated Species
+                </span>
+            </div>
+
+            <!-- Plant Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {% for plant in analysis.recommended_plants %}
+                <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all bg-white flex flex-col justify-between group">
+                    <div>
+                        <!-- Photo Container -->
+                        <div class="relative h-48 sm:h-52 overflow-hidden bg-forest-50 cursor-pointer">
+                            <img src="https://placehold.co/800x600?text=Plantify" alt="{{ plant.name }}" 
+                                 onclick="openLightbox('https://placehold.co/800x600?text=Plantify', '{{ plant.name }} ({{ plant.botanical_name }})')"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+
+                            <!-- Price Pill -->
+                            <span class="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur-md text-gray-800 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow pointer-events-none">
+                                {{ plant.price|default:"₹400 - ₹900" }}
+                            </span>
+
+                            <!-- Match Score Pill -->
+                            <span class="absolute top-2.5 left-2.5 bg-forest-900 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow pointer-events-none flex items-center gap-1">
+                                <i class="fas fa-star text-[9px] text-amber-300"></i> Match {{ plant.match_score|default:"92%" }}
+                            </span>
+
+                            <!-- Wishlist Heart Button -->
+                            <button type="button" 
+                                    onclick="toggleFavorite(event, this, '{{ plant.name|escapejs }}', '{{ plant.botanical_name|default:''|escapejs }}', '{{ plant.image|default:''|escapejs }}', '{{ plant.price|default:''|escapejs }}', '{{ plant.tag|default:''|escapejs }}')"
+                                    class="fav-heart-btn absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md text-gray-400 hover:text-rose-500 hover:scale-110 active:scale-90 flex items-center justify-center shadow-md transition-all z-10"
+                                    title="Save to Plant Wishlist"
+                                    aria-label="Add to wishlist">
+                                <i class="fas fa-heart text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-4 sm:p-5 space-y-3.5">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-base leading-tight group-hover:text-emerald-800 transition-colors">
+                                    {{ plant.name }}
+                                </h3>
+                                {% if plant.botanical_name %}
+                                <p class="text-xs italic text-gray-500 font-serif mt-0.5">{{ plant.botanical_name }}</p>
+                                {% endif %}
+                                
+                                <!-- Pet Safety & Family Badges -->
+                                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                    {% if plant.pet_safe %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                        <i class="fas fa-shield-cat text-[9px] text-emerald-600"></i> Non-Toxic & Pet Friendly
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+                                        <i class="fas fa-triangle-exclamation text-[9px] text-amber-600"></i> Precaution: Mild Pet Toxicity
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if plant.difficulty %}
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                                        {{ plant.difficulty }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Why This Plant Callout -->
+                            <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3 space-y-1">
+                                <span class="text-[10px] font-bold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5">
+                                    <i class="fas fa-lightbulb text-emerald-600 text-[10px]"></i>
+                                    <span>Why This Plant?</span>
+                                </span>
+                                <p class="text-xs text-emerald-950/90 leading-relaxed">
+                                    {% if plant.why_this_plant %}
+                                        {{ plant.why_this_plant }}
+                                    {% elif plant.description %}
+                                        {{ plant.description }}
+                                    {% else %}
+                                        Resilient architectural indoor species selected for your space based on ambient lighting and room structure.
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            <!-- Design Contribution -->
+                            {% if plant.design_contribution %}
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                                    <i class="fas fa-palette text-purple-600 text-[10px]"></i>
+                                    <span>Design Contribution</span>
+                                </span>
+                                <p class="text-xs text-gray-600 leading-relaxed">
+                                    {{ plant.design_contribution }}
+                                </p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Key Scientifically-Supported Benefits -->
+                            {% if plant.benefits or plant.key_benefits %}
+                            <div class="pt-2 border-t border-gray-100 space-y-1.5">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                                    <i class="fas fa-sparkles text-emerald-600 text-[10px]"></i>
+                                    <span>Key Evidence-Based Benefits</span>
+                                </span>
+                                <ul class="space-y-1.5">
+                                    {% if plant.benefits %}
+                                        {% for benefit in plant.benefits|slice:":2" %}
+                                        <li class="text-xs text-gray-700 flex items-start gap-1.5 leading-snug">
+                                            <i class="fas fa-check text-emerald-600 text-[10px] mt-0.5 shrink-0"></i>
+                                            <span>{{ benefit }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    {% elif plant.key_benefits %}
+                                        {% for benefit in plant.key_benefits|slice:":2" %}
+                                        <li class="text-xs text-gray-700 flex items-start gap-1.5 leading-snug">
+                                            <i class="fas fa-check text-emerald-600 text-[10px] mt-0.5 shrink-0"></i>
+                                            <span>{{ benefit }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Environmental Quick Indicators -->
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100 text-xs text-gray-600">
+                                <div class="flex items-center gap-1.5 truncate">
+                                    <i class="fas fa-sun text-amber-500 text-xs shrink-0"></i>
+                                    <span class="truncate font-medium text-[11px]">{{ plant.light|default:"Indirect Light" }}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 truncate">
+                                    <i class="fas fa-droplet text-blue-500 text-xs shrink-0"></i>
+                                    <span class="truncate font-medium text-[11px]">{{ plant.water|default:"Moderate" }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Expandable Care & Considerations Accordion -->
+                            <div class="pt-1">
+                                <details class="group/care text-xs">
+                                    <summary class="cursor-pointer list-none flex items-center justify-between text-[11px] font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-gray-100 transition">
+                                        <span class="flex items-center gap-1.5">
+                                            <i class="fas fa-heart-pulse text-emerald-600"></i> Care Intelligence & Considerations
+                                        </span>
+                                        <i class="fas fa-chevron-down text-[10px] text-gray-400 group-open/care:rotate-180 transition-transform"></i>
+                                    </summary>
+                                    <div class="mt-2 space-y-2 p-3 bg-slate-50/70 rounded-xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
+                                        {% if plant.care_intelligence.watering or plant.maintenance_advice.watering %}
+                                        <div>
+                                            <strong class="text-blue-700 font-bold block text-[10px] uppercase">Watering Guidance:</strong>
+                                            <span>{% if plant.care_intelligence.watering %}{{ plant.care_intelligence.watering }}{% else %}{{ plant.maintenance_advice.watering }}{% endif %}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if plant.care_intelligence.sunlight or plant.maintenance_advice.sunlight %}
+                                        <div>
+                                            <strong class="text-amber-700 font-bold block text-[10px] uppercase">Lighting Requirement:</strong>
+                                            <span>{% if plant.care_intelligence.sunlight %}{{ plant.care_intelligence.sunlight }}{% else %}{{ plant.maintenance_advice.sunlight }}{% endif %}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if plant.things_to_consider %}
+                                        <div>
+                                            <strong class="text-rose-700 font-bold block text-[10px] uppercase">Things to Consider:</strong>
+                                            <ul class="space-y-0.5 mt-0.5">
+                                                {% for limitation in plant.things_to_consider %}
+                                                <li class="text-[11px] text-gray-600">• {{ limitation }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="p-4 pt-2 border-t border-gray-100 flex items-center gap-2 bg-slate-50/30">
+                        {% if plant.wiki_url %}
+                        <a href="{{ plant.wiki_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition flex items-center justify-center gap-1.5 group/wiki"
+                           title="Read botanical documentation on Wikipedia">
+                            <i class="fab fa-wikipedia-w text-slate-600 group-hover/wiki:text-black"></i>
+                            <span>Wikipedia</span>
+                            <i class="fas fa-arrow-up-right-from-square text-[9px] text-slate-400 group-hover/wiki:text-slate-800"></i>
+                        </a>
+                        {% endif %}
+                        <button type="button" 
+                                onclick="openBotanicalModal('{{ forloop.counter0 }}')"
+                                class="flex-1 py-2 px-3 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-xs active:scale-95">
+                            <i class="fas fa-book-open text-[10px] text-emerald-300"></i>
+                            <span>Plant Specs</span>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 3: WHY WE CHOSE THESE PLANTS ("WHY THIS WORKS") -->
+        <!-- ============================================================ -->
+        <section id="why-this-works" class="bg-gradient-to-br from-forest-950 via-forest-900 to-forest-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl space-y-6">
+            <div class="space-y-1.5 border-b border-white/10 pb-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] sm:text-xs font-semibold rounded-full border border-emerald-400/30">
+                    <i class="fas fa-brain mr-1.5 text-[10px]"></i> Personalized Consultation
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold font-playfair tracking-tight text-white">
+                    3. Why We Chose These Plants & Why This Arrangement Works
+                </h2>
+                <p class="text-emerald-100/80 text-xs sm:text-sm leading-relaxed max-w-2xl">
+                    A personalized botanical assessment explaining environmental drivers, growth synergy, spatial flow, and lifestyle suitability.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                <!-- 1. AI Environmental Observations -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-sm space-y-2">
+                    <h3 class="font-bold text-emerald-300 text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fas fa-eye text-emerald-400"></i>
+                        <span>AI Environmental Observations</span>
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed text-xs">
+                        {{ analysis.why_this_works.observations|default:"Computer vision detected ambient illumination, spatial boundaries, and furnishings to map environmental zones accurately." }}
+                    </p>
+                </div>
+
+                <!-- 2. Environmental Factors Influencing Selection -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-sm space-y-2">
+                    <h3 class="font-bold text-emerald-300 text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fas fa-temperature-half text-amber-400"></i>
+                        <span>Environmental Selection Drivers</span>
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed text-xs">
+                        {{ analysis.why_this_works.environmental_drivers|default:"Species were selected whose physiological lux tolerance matches the observed indoor ambient daylight curve." }}
+                    </p>
+                </div>
+
+                <!-- 3. Botanical Synergy -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-sm space-y-2">
+                    <h3 class="font-bold text-emerald-300 text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fas fa-layer-group text-teal-400"></i>
+                        <span>Botanical Synergy & Growth Stratification</span>
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed text-xs">
+                        {{ analysis.why_this_works.plant_synergy|default:"Selected varieties complement each other with distinct vertical levels (floor, tabletop, trailing) and compatible low-stress watering cycles." }}
+                    </p>
+                </div>
+
+                <!-- 4. Spatial Improvement -->
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-sm space-y-2">
+                    <h3 class="font-bold text-emerald-300 text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fas fa-arrows-split-up-and-left text-blue-400"></i>
+                        <span>Spatial Flow & Practicality</span>
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed text-xs">
+                        {{ analysis.why_this_works.spatial_improvement|default:"Recommended placements utilize underused corners and elevated shelves, framing focal furniture while keeping primary traffic paths clear." }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- 5. Budget and Lifestyle Alignment Banner -->
+            <div class="bg-white/10 border border-white/15 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div class="space-y-1 max-w-2xl">
+                    <h4 class="font-bold text-emerald-300 uppercase tracking-wider text-[11px]">Budget & Maintenance Harmony</h4>
+                    <p class="text-gray-200 text-xs leading-relaxed">
+                        {{ analysis.why_this_works.lifestyle_alignment|default:"Tailored for your preferred budget tier and care capacity for resilient, low-maintenance longevity." }}
+                    </p>
+                </div>
+                <div class="shrink-0 bg-emerald-500/20 border border-emerald-400/30 px-3.5 py-2 rounded-xl text-emerald-200 text-xs font-mono font-bold text-center">
+                    {{ analysis.budget_estimate|default:"₹3,500 - ₹7,500" }}
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 4: SMART PLACEMENT GUIDE -->
+        <!-- ============================================================ -->
+        {% if analysis.placement_plan %}
+        <section id="smart-placement-guide" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 border border-gray-100 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 font-playfair flex items-center gap-2">
+                        <i class="fas fa-map-location-dot text-emerald-700 text-sm"></i>
+                        <span>4. Smart Placement Guide</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Location-specific recommendations maximizing light exposure, visual balance, and room walkability.</p>
+                </div>
+                <span class="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 font-bold px-3 py-1 rounded-full w-fit">
+                    {{ analysis.placement_plan|length }} Strategic Zones
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for item in analysis.placement_plan %}
+                <div class="bg-gradient-to-br from-slate-50 to-emerald-50/20 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-400 hover:shadow-xs transition-all group">
+                    <div class="space-y-3">
+                        <!-- Zone Number & Location -->
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="inline-flex items-center gap-2 font-bold text-gray-900">
+                                <span class="w-6 h-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0 shadow-xs">
+                                    {{ forloop.counter }}
+                                </span>
+                                <span class="font-bold text-gray-900 text-sm">{{ item.zone }}</span>
+                            </span>
+                            <span class="text-[10px] text-emerald-800 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
+                                Zone #{{ forloop.counter }}
+                            </span>
+                        </div>
+
+                        <!-- Plant Name -->
+                        <div class="pt-1">
+                            <div class="font-bold text-gray-900 text-base group-hover:text-emerald-800 transition-colors">
+                                {{ item.plant }}
+                            </div>
+                            {% if item.botanical_name %}
+                            <div class="text-[11px] italic text-gray-500 font-serif">
+                                {{ item.botanical_name }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Why Placed In This Location -->
+                        {% if item.why_placed_here %}
+                        <div class="bg-white/95 rounded-xl p-3 border border-emerald-100 shadow-2xs space-y-1">
+                            <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wide flex items-center gap-1.5">
+                                <i class="fas fa-compass text-emerald-600"></i>
+                                <span>Why this placement?</span>
+                            </span>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                {{ item.why_placed_here }}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Placement Advantages -->
+                        {% if item.placement_advantages %}
+                        <div class="bg-slate-100/80 rounded-xl p-3 border border-gray-200/60 space-y-1">
+                            <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                                <i class="fas fa-circle-check text-emerald-600"></i>
+                                <span>Placement Advantages</span>
+                            </span>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                {{ item.placement_advantages }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Footer Species Wikipedia Link -->
+                    {% if item.wiki_url %}
+                    <div class="mt-4 pt-3 border-t border-gray-200/70 flex items-center justify-between text-xs">
+                        <span class="text-[11px] text-gray-400">Botanical Reference</span>
+                        <a href="{{ item.wiki_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline transition">
+                            <i class="fab fa-wikipedia-w text-[10px] text-gray-600"></i>
+                            <span>Wikipedia Specs</span>
+                            <i class="fas fa-arrow-up-right-from-square text-[9px] text-emerald-600"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 5: PLANT CARE GUIDE (ACTIONABLE CARE INTELLIGENCE) -->
+        <!-- ============================================================ -->
+        <section id="plant-care-guide" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 border border-gray-100 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 font-playfair flex items-center gap-2">
+                        <i class="fas fa-hand-holding-droplet text-blue-600 text-sm"></i>
+                        <span>5. Actionable Plant Care Guide</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Straightforward, practical maintenance guidelines designed to prevent overwatering and promote steady growth.</p>
+                </div>
+                <span class="text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full w-fit">
+                    {{ analysis.care_routine_summary|default:"Weekly Inspection Rhythm" }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- 1. Watering Routine -->
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 space-y-2">
+                    <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-2xs">
+                        <i class="fas fa-droplet"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-xs sm:text-sm">Watering Discipline</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Insert your index finger 2 inches into the soil. Water only if soil feels completely dry at that depth. Never water on a blind calendar schedule.
+                    </p>
+                </div>
+
+                <!-- 2. Sunlight Alignment -->
+                <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 space-y-2">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm shadow-2xs">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-xs sm:text-sm">Sunlight & Windows</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Maintain plants in bright to medium indirect light. Shield tender tropical foliage from harsh direct afternoon sunbeams through sheer curtains.
+                    </p>
+                </div>
+
+                <!-- 3. Container & Drainage -->
+                <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 space-y-2">
+                    <div class="w-9 h-9 rounded-xl bg-stone-700 text-white flex items-center justify-center text-sm shadow-2xs">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-xs sm:text-sm">Drainage & Soil</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Ensure all containers have bottom drainage holes. Empty saucers 15 minutes after watering so root systems never stay submerged in standing water.
+                    </p>
+                </div>
+
+                <!-- 4. Seasonal Dynamics -->
+                <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 space-y-2">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-2xs">
+                        <i class="fas fa-calendar-days"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 text-xs sm:text-sm">Seasonal Adjustments</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        In spring & summer, plants drink faster during active growth. In winter dormancy, cut watering frequency in half and halt fertilizing.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 6: DESIGN & WELLNESS INSIGHTS -->
+        <!-- ============================================================ -->
+        <section id="design-wellness-insights" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 border border-gray-100 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900 font-playfair flex items-center gap-2">
+                        <i class="fas fa-spa text-teal-700 text-sm"></i>
+                        <span>6. Design & Wellness Insights</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Evidence-based biological benefits and interior styling principles applied to your room.</p>
+                </div>
+                <span class="text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full w-fit">
+                    Biophilic Interior Design
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Biophilic Wellness -->
+                <div class="border border-gray-100 bg-slate-50/70 rounded-2xl p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-teal-800 font-bold text-xs sm:text-sm">
+                        <i class="fas fa-heart-pulse text-teal-600"></i>
+                        <span>Cognitive Focus & Stress Reduction</span>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Scientific biophilia studies demonstrate that visual contact with living foliage lowers cortisol levels, reduces sympathetic nervous system tension, and improves concentration during screen work.
+                    </p>
+                </div>
+
+                <!-- Air Quality & Humidity -->
+                <div class="border border-gray-100 bg-slate-50/70 rounded-2xl p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs sm:text-sm">
+                        <i class="fas fa-wind text-emerald-600"></i>
+                        <span>Clean Air & Natural Moisture Regulation</span>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Foliage surfaces trap airborne dust particles while transpiration steadily releases pure moisture vapor back into dry, air-conditioned indoor environments, supporting respiratory comfort.
+                    </p>
+                </div>
+
+                <!-- Interior Design Planters -->
+                <div class="border border-gray-100 bg-slate-50/70 rounded-2xl p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-purple-800 font-bold text-xs sm:text-sm">
+                        <i class="fas fa-shapes text-purple-600"></i>
+                        <span>Planter & Material Harmony</span>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        {{ analysis.style_guide.planters|default:"Pair with matte ceramic, terracotta, or fiber-concrete planters to accentuate natural textures against neutral furniture." }}
+                    </p>
+                </div>
+
+                <!-- Layout Aesthetic Tip -->
+                <div class="border border-gray-100 bg-slate-50/70 rounded-2xl p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-amber-800 font-bold text-xs sm:text-sm">
+                        <i class="fas fa-lightbulb text-amber-600"></i>
+                        <span>Visual Depth & Foliage Contrast</span>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        {{ analysis.style_guide.tip|default:"Juxtapose vertical sword-like foliage against soft split fronds and trailing vines to establish rhythmic organic depth across the room." }}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 7: THINGS TO WATCH OUT FOR (LIMITATIONS & PRECAUTIONS) -->
+        <!-- ============================================================ -->
+        <section id="things-to-watch-out-for" class="bg-amber-50/40 border border-amber-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-amber-200/60 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-amber-950 font-playfair flex items-center gap-2">
+                        <i class="fas fa-shield-halved text-amber-700 text-sm"></i>
+                        <span>7. Things to Watch Out For</span>
+                    </h2>
+                    <p class="text-xs text-amber-800 mt-0.5">Important environmental limitations, safety boundaries, and precautions for plant longevity.</p>
+                </div>
+                <span class="text-xs font-bold text-amber-900 bg-amber-100 px-3 py-1 rounded-full w-fit">
+                    Practical Precautions
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {% for challenge in analysis.smart_insights.potential_challenges %}
+                <div class="bg-white/90 border border-amber-200 rounded-xl p-3.5 flex items-start gap-2.5 shadow-2xs">
+                    <i class="fas fa-triangle-exclamation text-amber-600 text-xs mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-gray-700 leading-relaxed">{{ challenge }}</p>
+                </div>
+                {% empty %}
+                <div class="bg-white/90 border border-amber-200 rounded-xl p-3.5 flex items-start gap-2.5">
+                    <i class="fas fa-triangle-exclamation text-amber-600 text-xs mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-gray-700 leading-relaxed">Low-light tolerance does not mean total darkness: plants require ambient photons from nearby windows or lamps to maintain photosynthesis.</p>
+                </div>
+                <div class="bg-white/90 border border-amber-200 rounded-xl p-3.5 flex items-start gap-2.5">
+                    <i class="fas fa-triangle-exclamation text-amber-600 text-xs mt-0.5 shrink-0"></i>
+                    <p class="text-xs text-gray-700 leading-relaxed">Overwatering is the #1 cause of indoor plant decline: always confirm soil is dry 2 inches down before adding moisture.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- High-Impact Practical Recommendations Callout -->
+            <div class="bg-white rounded-2xl p-4 border border-amber-200/80 space-y-2 mt-2">
+                <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wide flex items-center gap-1.5">
+                    <i class="fas fa-star text-amber-500"></i> Pro Expert Recommendations
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
+                    {% for rec in analysis.smart_insights.practical_recommendations %}
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check-circle text-emerald-600 text-[11px] mt-0.5 shrink-0"></i>
+                        <span>{{ rec }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check-circle text-emerald-600 text-[11px] mt-0.5 shrink-0"></i>
+                        <span>Rotate planters 90 degrees once a month to ensure balanced foliage growth toward ambient light.</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-check-circle text-emerald-600 text-[11px] mt-0.5 shrink-0"></i>
+                        <span>Empty drainage saucers 15 minutes after watering so root systems never sit in standing water.</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Bottom Rescan Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-xs">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-forest-800 text-white flex items-center justify-center shrink-0">
+                    <i class="fas fa-camera text-base"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs sm:text-sm font-bold text-gray-900">Need to style another corner or room?</h4>
+                    <p class="text-[11px] text-gray-500">Upload a fresh room scan to generate a tailored botanical blueprint in seconds.</p>
+                </div>
+            </div>
+            <a href="{% url 'utility:upload' %}" class="w-full sm:w-auto px-5 py-2.5 bg-forest-800 hover:bg-forest-900 text-white font-bold rounded-xl text-center text-xs shadow-md transition active:scale-95">
+                <i class="fas fa-redo mr-1.5"></i> Scan Another Space
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<!-- Mobile Sticky Bottom Navigation Bar (Visible only on mobile devices < 640px) -->
+<div class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-lg border-t border-gray-200 py-2.5 px-4 sm:hidden z-40 flex items-center justify-between gap-3 shadow-2xl">
+    <a href="{% url 'utility:upload' %}" class="flex-1 py-2 px-3 rounded-xl bg-forest-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow active:scale-95">
+        <i class="fas fa-camera text-emerald-300"></i>
+        <span>Scan Room</span>
+    </a>
+    
+    <button type="button" onclick="switchCarouselTab('transformed')" class="flex-1 py-2 px-3 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95">
+        <i class="fas fa-wand-magic-sparkles"></i>
+        <span>AI Makeover</span>
+    </button>
+    
+    {% if user.is_authenticated %}
+    <a href="{% url 'dashboard:favorites' %}" class="p-2 rounded-xl text-rose-500 hover:bg-rose-50 flex items-center justify-center border border-gray-200" title="Wishlist">
+        <i class="fas fa-heart text-sm"></i>
+    </a>
+    {% endif %}
+</div>
+
+<!-- Recommended Plants Serialized JSON Data for Interactive Botanical Modal -->
+{{ analysis.recommended_plants|json_script:"recommendedPlantsJson" }}
+
+<!-- BOTANICAL PROFILE & CARE GUIDE MODAL (MOBILE RESPONSIVE & ACCESSIBLE) -->
+<div id="botanicalModal" 
+     class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-3 sm:p-6 transition-opacity duration-300"
+     onclick="closeBotanicalModalOnBackdrop(event)">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col justify-between"
+         onclick="event.stopPropagation()">
+        
+        <!-- Header -->
+        <div class="sticky top-0 bg-white/95 backdrop-blur-md px-5 py-4 border-b border-gray-100 flex items-center justify-between z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-base shadow-2xs">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <div>
+                    <h3 id="bModalTitle" class="text-base sm:text-lg font-bold text-gray-900 leading-tight">Plant Name</h3>
+                    <p id="bModalBotanical" class="text-xs italic text-gray-500 font-serif">Botanical Classification</p>
+                </div>
+            </div>
+            <button type="button" 
+                    onclick="closeBotanicalModal()" 
+                    class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition"
+                    aria-label="Close modal">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Body Content -->
+        <div class="p-5 sm:p-6 space-y-5">
+            <!-- Top Photo & Quick Taxonomy Grid -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                <img id="bModalImage" src="" alt="Botanical Preview" class="w-full sm:w-44 h-44 object-cover rounded-2xl border border-gray-200 shadow-xs shrink-0">
+                <div class="w-full space-y-2 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-gray-100">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold block">Plant Family</span>
+                            <span id="bModalFamily" class="font-bold text-gray-800 text-xs">Araceae</span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-gray-100">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold block">Native Origin</span>
+                            <span id="bModalOrigin" class="font-bold text-gray-800 text-xs">Tropical Rainforests</span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-gray-100">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold block">Mature Size</span>
+                            <span id="bModalSize" class="font-bold text-gray-800 text-xs">2 - 3 ft</span>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-gray-100">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold block">Growth Rate</span>
+                            <span id="bModalGrowth" class="font-bold text-gray-800 text-xs">Moderate</span>
+                        </div>
+                    </div>
+                    <div id="bModalPetSafety" class="p-2.5 rounded-xl text-xs font-medium border"></div>
+                </div>
+            </div>
+
+            <!-- Proven Benefits Section -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fas fa-sparkles text-emerald-600"></i> Proven Botanical & Air-Purifying Benefits
+                </h4>
+                <div id="bModalBenefits" class="space-y-2 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100"></div>
+            </div>
+
+            <!-- Comprehensive Maintenance Guide -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fas fa-hand-holding-heart text-blue-600"></i> Comprehensive Maintenance & Care Intelligence
+                </h4>
+                <div id="bModalCare" class="space-y-2.5 bg-slate-50 p-3.5 rounded-2xl border border-gray-100 text-xs"></div>
+            </div>
+
+            <!-- Design Contribution & Considerations -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fas fa-compass-drafting text-purple-600"></i> Interior Design Role & Limitations
+                </h4>
+                <div id="bModalDesign" class="space-y-2 bg-purple-50/50 p-3.5 rounded-2xl border border-purple-100 text-xs"></div>
+            </div>
+        </div>
+
+        <!-- Footer With Wikipedia External Button (New Tab) -->
+        <div class="p-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-b-2xl sm:rounded-b-3xl">
+            <span class="text-[11px] text-gray-500 font-medium">Free, limitless botanical knowledge base</span>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <a id="bModalWikiLink" 
+                   href="#" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="flex-1 sm:flex-initial px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm transition group">
+                    <i class="fab fa-wikipedia-w"></i>
+                    <span>Read on Wikipedia</span>
+                    <i class="fas fa-arrow-up-right-from-square text-[10px] text-gray-300 group-hover:text-white"></i>
+                </a>
+                <button type="button" 
+                        onclick="closeBotanicalModal()" 
+                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-xs rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FULLSCREEN IMAGE LIGHTBOX MODAL WITH SAFE MOBILE TOUCH VIEWPORT -->
+<div id="lightboxModal" 
+     class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center hidden p-3 sm:p-6 transition-opacity duration-300"
+     onclick="closeLightboxOnBackdrop(event)">
+    
+    <div class="absolute top-3 right-3 sm:top-6 sm:right-6 z-50 flex items-center gap-2">
+        <button type="button" 
+                onclick="closeLightbox()" 
+                class="text-white hover:text-white bg-white/20 hover:bg-white/30 active:scale-90 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all shadow-lg"
+                aria-label="Close image preview">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+    </div>
+
+    <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+        <div id="lightboxMagnifyWrapper" 
+             class="magnify-wrapper overflow-hidden rounded-xl sm:rounded-2xl border border-white/15 shadow-2xl flex items-center justify-center bg-black/60 cursor-pointer sm:cursor-crosshair relative max-h-[75vh] sm:max-h-[80vh] w-full">
+            <img id="lightboxImage" src="" alt="Maximized View" class="magnify-img max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain transition-transform duration-150 ease-out">
+            <span class="hidden sm:inline-block absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded pointer-events-none">
+                <i class="fas fa-mouse mr-1 text-emerald-400"></i> Hover mouse to magnify
+            </span>
+        </div>
+
+        <div class="mt-3 text-center px-4">
+            <p id="lightboxCaption" class="text-white text-xs sm:text-sm font-bold bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full inline-block truncate max-w-[90vw]">
+                Maximized Space Analysis View
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+
+<script>
+// --- CAROUSEL TAB SWITCHING & AJAX CLOUDFLARE AI TRANSFORM ---
+let currentTab = 'annotated';
+let transformedUrl = "{{ analysis.transformed_image_url|default:'' }}";
+
+function switchCarouselTab(tab) {
+    currentTab = tab;
+    
+    const slideTrans = document.getElementById('slideTransformed');
+    const slideAnnot = document.getElementById('slideAnnotated');
+    const slideOrig = document.getElementById('slideOriginal');
+
+    if (slideTrans) slideTrans.classList.add('hidden');
+    if (slideAnnot) slideAnnot.classList.add('hidden');
+    if (slideOrig) slideOrig.classList.add('hidden');
+
+    ['Transformed', 'Annotated', 'Original'].forEach(t => {
+        const btn = document.getElementById('tabBtn' + t);
+        if (btn) {
+            btn.className = 'carousel-tab-btn flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 transition-all duration-200 flex items-center justify-center space-x-1.5 shrink-0';
+        }
+    });
+
+    const activeBtn = document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    if (activeBtn) {
+        activeBtn.className = 'carousel-tab-btn flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1.5 bg-white text-emerald-800 shadow-sm border border-gray-200 shrink-0';
+    }
+
+    const slide = document.getElementById('slide' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    if (slide) {
+        slide.classList.remove('hidden');
+    }
+}
+
+function openCurrentTabLightbox() {
+    if (currentTab === 'transformed' && transformedUrl) {
+        openLightbox(transformedUrl, 'AI Photorealistic Room Makeover');
+    } else if (currentTab === 'annotated') {
+        openLightbox('{{ analysis.annotated_image_url|default:"" }}', 'Annotated Room Space Analysis');
+    } else if (currentTab === 'original') {
+        openLightbox('{{ analysis.original_image_url|default:"" }}', 'Original Room Photo');
+    }
+}
+
+function triggerCloudflareTransform() {
+    const loadingState = document.getElementById('transformedLoadingState');
+    const wrapper = document.getElementById('transformedImgWrapper');
+    const errorState = document.getElementById('transformedErrorState');
+    const badge = document.getElementById('transformedBadge');
+    
+    if (loadingState) loadingState.classList.remove('hidden');
+    if (wrapper) wrapper.classList.add('hidden');
+    if (errorState) errorState.classList.add('hidden');
+    if (badge) {
+        badge.innerText = 'Generating...';
+        badge.className = 'ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 animate-pulse font-semibold';
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+    fetch('{% url "utility:transform_image_api" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.transformed_image_url) {
+            transformedUrl = data.transformed_image_url;
+            const imgEl = document.getElementById('mainTransformedImg');
+            if (imgEl) imgEl.src = transformedUrl;
+            
+            if (loadingState) loadingState.classList.add('hidden');
+            if (wrapper) wrapper.classList.remove('hidden');
+            
+            if (badge) {
+                badge.innerText = 'Ready';
+                badge.className = 'ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold';
+            }
+        } else {
+            if (loadingState) loadingState.classList.add('hidden');
+            if (errorState) errorState.classList.remove('hidden');
+            const errEl = document.getElementById('transformedErrorMessage');
+            if (errEl && data.error) errEl.innerText = data.error;
+            if (badge) {
+                badge.innerText = 'Error';
+                badge.className = 'ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold';
+            }
+        }
+    })
+    .catch(err => {
+        console.error("Cloudflare transformation error:", err);
+        if (loadingState) loadingState.classList.add('hidden');
+        if (errorState) errorState.classList.remove('hidden');
+        if (badge) {
+            badge.innerText = 'Failed';
+            badge.className = 'ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold';
+        }
+    });
+}
+
+// --- MOUSE HOVER LENS MAGNIFIER EFFECT FUNCTION ---
+function attachMagnifier(wrapper) {
+    const img = wrapper.querySelector('.magnify-img');
+    if (!img) return;
+
+    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+        return;
+    }
+
+    wrapper.addEventListener('mousemove', function (e) {
+        const rect = wrapper.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        img.style.transformOrigin = `${x}% ${y}%`;
+        img.style.transform = 'scale(2.2)';
+    });
+
+    wrapper.addEventListener('mouseleave', function () {
+        img.style.transformOrigin = 'center center';
+        img.style.transform = 'scale(1)';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const wrappers = document.querySelectorAll('.magnify-wrapper');
+    wrappers.forEach(attachMagnifier);
+
+    if (transformedUrl && transformedUrl !== 'None') {
+        const loadingState = document.getElementById('transformedLoadingState');
+        const wrapper = document.getElementById('transformedImgWrapper');
+        const badge = document.getElementById('transformedBadge');
+        if (loadingState) loadingState.classList.add('hidden');
+        if (wrapper) wrapper.classList.remove('hidden');
+        if (badge) {
+            badge.innerText = 'Ready';
+            badge.className = 'ml-1 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold';
+        }
+    } else {
+        triggerCloudflareTransform();
+    }
+});
+
+// --- LIGHTBOX MODAL ---
+function openLightbox(imageSrc, caption) {
+    if (!imageSrc) return;
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImage');
+    const cap = document.getElementById('lightboxCaption');
+    
+    img.src = imageSrc;
+    img.style.transformOrigin = 'center center';
+    img.style.transform = 'scale(1)';
+    cap.innerText = caption || 'Maximized View';
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImage');
+    if (img) {
+        img.style.transformOrigin = 'center center';
+        img.style.transform = 'scale(1)';
+    }
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function closeLightboxOnBackdrop(e) {
+    if (e.target.id === 'lightboxModal') {
+        closeLightbox();
+    }
+}
+
+// --- BOTANICAL SPECIFICATION & CARE MODAL LOGIC ---
+function getRecommendedPlantsList() {
+    try {
+        const el = document.getElementById('recommendedPlantsJson');
+        if (el) {
+            return JSON.parse(el.textContent);
+        }
+    } catch (e) {
+        console.error('Error parsing recommended plants:', e);
+    }
+    return [];
+}
+
+function openBotanicalModal(index) {
+    const plants = getRecommendedPlantsList();
+    const plant = plants[index];
+    if (!plant) return;
+
+    const modal = document.getElementById('botanicalModal');
+    
+    // Header
+    document.getElementById('bModalTitle').innerText = plant.name || 'Indoor Plant';
+    document.getElementById('bModalBotanical').innerText = plant.botanical_name || 'Botanical Cultivar';
+    
+    // Photo
+    const imgEl = document.getElementById('bModalImage');
+    imgEl.src = plant.image || '';
+    imgEl.alt = plant.name || 'Plant Photo';
+
+    // Taxonomy & Dimensions
+    document.getElementById('bModalFamily').innerText = plant.family || (plant.botanical_info && plant.botanical_info.family) || 'Araceae / Foliage';
+    document.getElementById('bModalOrigin').innerText = plant.origin || (plant.botanical_info && plant.botanical_info.origin) || 'Tropical & Subtropical';
+    document.getElementById('bModalSize').innerText = plant.mature_size || (plant.botanical_info && plant.botanical_info.mature_size) || '2 - 3 ft';
+    document.getElementById('bModalGrowth').innerText = plant.growth_rate || (plant.botanical_info && plant.botanical_info.growth_rate) || 'Moderate';
+
+    // Pet Safety (ASPCA Standards)
+    const petBox = document.getElementById('bModalPetSafety');
+    const isPetSafe = plant.pet_safe !== undefined ? plant.pet_safe : (plant.botanical_info && plant.botanical_info.pet_safe);
+    const petNotes = plant.pet_safety_notes || (plant.botanical_info && plant.botanical_info.pet_safety_notes) || '';
+    
+    if (isPetSafe) {
+        petBox.className = 'p-2.5 rounded-xl text-xs font-medium border bg-emerald-50 text-emerald-900 border-emerald-200';
+        petBox.innerHTML = `<div class="flex items-center gap-1.5 font-bold text-emerald-800"><i class="fas fa-shield-cat"></i> <span>100% Pet Friendly & Non-Toxic</span></div><p class="text-[11px] text-emerald-700 mt-0.5">${petNotes || 'Certified non-toxic and safe around cats and dogs according to ASPCA standards.'}</p>`;
+    } else {
+        petBox.className = 'p-2.5 rounded-xl text-xs font-medium border bg-amber-50 text-amber-900 border-amber-200';
+        petBox.innerHTML = `<div class="flex items-center gap-1.5 font-bold text-amber-800"><i class="fas fa-triangle-exclamation"></i> <span>Pet Precaution Advised</span></div><p class="text-[11px] text-amber-700 mt-0.5">${petNotes || 'Keep in elevated stands or hanging planters out of reach of curious domestic pets.'}</p>`;
+    }
+
+    // Proven Benefits
+    const benefitsEl = document.getElementById('bModalBenefits');
+    const benefits = plant.benefits || plant.key_benefits || (plant.botanical_info && plant.botanical_info.benefits) || [];
+    if (benefits && benefits.length > 0) {
+        benefitsEl.innerHTML = benefits.map(b => `
+            <div class="flex items-start gap-2 text-xs text-emerald-950 font-medium">
+                <i class="fas fa-circle-check text-emerald-600 mt-0.5 shrink-0 text-xs"></i>
+                <span class="leading-relaxed">${b}</span>
+            </div>
+        `).join('');
+    } else {
+        benefitsEl.innerHTML = `
+            <div class="flex items-start gap-2 text-xs text-emerald-950 font-medium">
+                <i class="fas fa-circle-check text-emerald-600 mt-0.5 shrink-0 text-xs"></i>
+                <span class="leading-relaxed">Proven indoor air filtration and biophilic mental stress reduction.</span>
+            </div>
+        `;
+    }
+
+    // Maintenance Guide
+    const careEl = document.getElementById('bModalCare');
+    const care = plant.care_intelligence || plant.maintenance_advice || (plant.botanical_info && plant.botanical_info.care_intelligence) || {};
+    
+    careEl.innerHTML = `
+        <div class="space-y-2">
+            <div class="flex items-start gap-2.5 pb-2 border-b border-gray-200/60">
+                <i class="fas fa-tint text-blue-500 mt-0.5 text-xs shrink-0"></i>
+                <div>
+                    <strong class="text-gray-900 block font-bold text-[11px]">Watering Schedule</strong>
+                    <span class="text-gray-600 leading-relaxed text-xs">${care.watering || plant.water || 'Water when top 1-2 inches of soil feel dry.'}</span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2.5 pb-2 border-b border-gray-200/60">
+                <i class="fas fa-sun text-amber-500 mt-0.5 text-xs shrink-0"></i>
+                <div>
+                    <strong class="text-gray-900 block font-bold text-[11px]">Sunlight Requirements</strong>
+                    <span class="text-gray-600 leading-relaxed text-xs">${care.sunlight || plant.light || 'Medium to bright indirect light.'}</span>
+                </div>
+            </div>
+            <div class="flex items-start gap-2.5 pb-2 border-b border-gray-200/60">
+                <i class="fas fa-layer-group text-stone-500 mt-0.5 text-xs shrink-0"></i>
+                <div>
+                    <strong class="text-gray-900 block font-bold text-[11px]">Soil & Potting Mix</strong>
+                    <span class="text-gray-600 leading-relaxed text-xs">${care.soil || 'Well-draining aerated indoor potting mix with perlite.'}</span>
+                </div>
+            </div>
+            ${care.feeding ? `
+            <div class="flex items-start gap-2.5 pb-2 border-b border-gray-200/60">
+                <i class="fas fa-seedling text-emerald-600 mt-0.5 text-xs shrink-0"></i>
+                <div>
+                    <strong class="text-gray-900 block font-bold text-[11px]">Feeding & Nutrition</strong>
+                    <span class="text-gray-600 leading-relaxed text-xs">${care.feeding}</span>
+                </div>
+            </div>` : ''}
+            ${care.troubleshooting ? `
+            <div class="flex items-start gap-2.5 pt-0.5">
+                <i class="fas fa-lightbulb text-purple-600 mt-0.5 text-xs shrink-0"></i>
+                <div>
+                    <strong class="text-gray-900 block font-bold text-[11px]">Pro Care & Troubleshooting Tip</strong>
+                    <span class="text-gray-600 leading-relaxed text-xs">${care.troubleshooting}</span>
+                </div>
+            </div>` : ''}
+        </div>
+    `;
+
+    // Design Contribution & Considerations
+    const designEl = document.getElementById('bModalDesign');
+    const designCont = plant.design_contribution || (plant.botanical_info && plant.botanical_info.design_contribution) || 'Adds architectural greenery and organic visual warmth.';
+    const considerList = plant.things_to_consider || (plant.botanical_info && plant.botanical_info.things_to_consider) || [];
+
+    let considerHtml = '';
+    if (considerList && considerList.length > 0) {
+        considerHtml = `
+            <div class="mt-2 pt-2 border-t border-purple-200/60">
+                <strong class="text-purple-900 block font-bold text-[10px] uppercase">Things to Consider / Limitations:</strong>
+                <ul class="space-y-1 mt-1">
+                    ${considerList.map(c => `<li class="text-[11px] text-gray-700">• ${c}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    designEl.innerHTML = `
+        <div>
+            <strong class="text-purple-900 block font-bold text-[10px] uppercase">Interior Aesthetic Contribution:</strong>
+            <p class="text-xs text-gray-700 mt-0.5">${designCont}</p>
+            ${considerHtml}
+        </div>
+    `;
+
+    // Wikipedia Link (New Tab)
+    const wikiBtn = document.getElementById('bModalWikiLink');
+    const wikiUrl = plant.wiki_url || (plant.botanical_info && plant.botanical_info.wiki_url) || `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(plant.name)}`;
+    wikiBtn.href = wikiUrl;
+    wikiBtn.target = "_blank";
+    wikiBtn.rel = "noopener noreferrer";
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBotanicalModal() {
+    const modal = document.getElementById('botanicalModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    document.body.style.overflow = 'auto';
+}
+
+function closeBotanicalModalOnBackdrop(e) {
+    if (e.target.id === 'botanicalModal') {
+        closeBotanicalModal();
+    }
+}
+
+// Close Modals on ESC key
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+        closeBotanicalModal();
+    }
+});
+
+// Toggle Favorite Plant
+async function toggleFavorite(e, btn, plantName, botanicalName, plantImage, price, plantTag) {
+    e.stopPropagation();
+    
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    if (!isAuthenticated) {
+        if (confirm("Sign in to save this plant to your wishlist! Would you like to log in now?")) {
+            window.location.href = "{% url 'accounts:login' %}?next=" + encodeURIComponent(window.location.pathname);
+        }
+        return;
+    }
+
+    const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+    const csrfToken = csrfEl ? csrfEl.value : '';
+
+    try {
+        btn.classList.add('animate-pulse');
+        const resp = await fetch('/dashboard/favorites/toggle/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                plant_name: plantName,
+                botanical_name: botanicalName,
+                plant_image: plantImage,
+                price: price,
+                plant_tag: plantTag
+            })
+        });
+
+        const data = await resp.json();
+        btn.classList.remove('animate-pulse');
+
+        if (data.success) {
+            const icon = btn.querySelector('i');
+            if (data.action === 'added') {
+                btn.classList.remove('text-gray-400');
+                btn.classList.add('text-rose-500', 'scale-110');
+                if (icon) icon.className = 'fas fa-heart text-xs text-rose-500';
+            } else {
+                btn.classList.remove('text-rose-500', 'scale-110');
+                btn.classList.add('text-gray-400');
+                if (icon) icon.className = 'far fa-heart text-xs text-gray-400';
+            }
+        } else {
+            alert(data.error || 'Failed to update favorite');
+        }
+    } catch (err) {
+        console.error(err);
+        btn.classList.remove('animate-pulse');
+    }
+}
+</script>
+{% endblock body %}

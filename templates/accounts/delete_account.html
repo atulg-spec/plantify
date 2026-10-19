@@ -1,0 +1,42 @@
+{% extends "home/base.html" %}
+
+{% block title %}Delete Account | Plantify{% endblock %}
+
+{% block content %}
+<section class="min-h-[75vh] py-14 px-4 sm:px-6 lg:px-8 flex items-center justify-center bg-gray-50">
+    <div class="max-w-md w-full">
+        <div class="bg-white rounded-3xl border border-red-100 p-8 shadow-xl shadow-red-950/5">
+            <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 font-playfair text-center">Delete Account</h1>
+            <p class="text-xs text-gray-600 mt-2 text-center leading-relaxed">
+                This action is <strong class="text-red-600">permanent</strong>. All your saved space scans, generated AI room visualizations, and plant favorites will be permanently removed.
+            </p>
+
+            <form method="POST" action="{% url 'accounts:delete_account' %}" class="mt-6 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                        To confirm, please type your username: <span class="font-mono text-red-600 font-bold">{{ user.username }}</span>
+                    </label>
+                    <input type="text"
+                           name="confirm"
+                           placeholder="{{ user.username }}"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                           required>
+                </div>
+
+                <div class="pt-4 flex items-center gap-3">
+                    <a href="{% url 'accounts:profile' %}" class="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-center text-sm font-semibold transition">
+                        Nevermind
+                    </a>
+                    <button type="submit" class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-center text-sm font-semibold shadow transition">
+                        Delete Forever
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

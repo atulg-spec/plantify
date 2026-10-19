@@ -1,0 +1,71 @@
+{% extends "home/base.html" %}
+
+{% block title %}About Us | Plantify AI Smart Green Interior Designer{% endblock %}
+{% block meta_description %}Learn about Plantify's mission to bring smart, sustainable botanical design into urban apartments and compact living spaces using AI.{% endblock %}
+
+{% block body %}
+<section class="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-12">
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto space-y-4">
+        <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            🌿 Our Mission
+        </span>
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 font-playfair tracking-tight">
+            Bridging Nature and Urban Living with Intelligent Design
+        </h1>
+        <p class="text-base text-gray-600 leading-relaxed">
+            Plantify was born from a simple observation: urban dwellers love indoor plants, but 70% of houseplants perish within months due to mismatched lighting, improper watering, and awkward placement.
+        </p>
+    </div>
+
+    <!-- Core Pillars Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl">
+                <i class="fas fa-eye"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 font-playfair">Computer Vision First</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+                We analyze your actual room image using luminance analysis and neural object detectors to map light gradients, surface types, and spatial corners accurately.
+            </p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 font-playfair">Botanical Compatibility</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+                Our plant scoring engine cross-references real botanical hardiness data, temperature ranges, air-purification indices, and pet-friendly safety rules.
+            </p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 font-playfair">Photorealistic Simulation</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+                See your decorated room before you buy. Our generative AI engine visualizes recommended plants in matching planters right inside your uploaded photo.
+            </p>
+        </div>
+    </div>
+
+    <!-- Story Card -->
+    <div class="bg-gradient-to-r from-forest-950 via-forest-900 to-emerald-950 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+        <div class="max-w-2xl relative z-10 space-y-4">
+            <span class="text-xs uppercase font-bold tracking-widest text-emerald-400">Why It Matters</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-playfair">Greener Homes, Healthier Minds</h2>
+            <p class="text-xs sm:text-sm text-forest-200 leading-relaxed">
+                Indoor plants improve indoor air quality, reduce anxiety, and enhance daily productivity. By pairing AI vision with affordable nursery choices, Plantify makes thriving urban gardening accessible to anyone, anywhere.
+            </p>
+            <div class="pt-2">
+                <a href="{% url 'utility:upload' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-forest-950 font-bold text-xs shadow transition">
+                    <span>Try Plantify Today</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock body %}

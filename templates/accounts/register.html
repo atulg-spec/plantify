@@ -1,0 +1,135 @@
+{% extends "home/base.html" %}
+
+{% block title %}Create Your Plantify Account | Plantify{% endblock %}
+{% block meta_description %}Join Plantify to save your space scans, track personalized plant recommendations, and turn your rooms into thriving green sanctuaries.{% endblock %}
+
+{% block content %}
+<section class="min-h-[85vh] py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center bg-gradient-to-b from-forest-50/60 via-white to-forest-50/30">
+    <div class="max-w-md w-full">
+        <!-- Header Card -->
+        <div class="text-center mb-8">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 mb-3 border border-emerald-200">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Free Smart Plant Styling
+            </span>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight font-playfair">
+                Create your account
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                Save your room scans, explore tailored botanical plans, and personalize your green interior.
+            </p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-3xl shadow-xl shadow-forest-900/5 border border-forest-100 p-8 sm:p-10 relative overflow-hidden">
+            <!-- Subtle decorative background glow -->
+            <div class="absolute -top-16 -right-16 w-32 h-32 bg-emerald-100/50 rounded-full blur-2xl pointer-events-none"></div>
+
+            {% if form.non_field_errors %}
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+                    {% for error in form.non_field_errors %}
+                        <p class="flex items-center gap-2">
+                            <i class="fas fa-exclamation-circle text-red-500"></i> {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'accounts:register' %}" class="space-y-4" novalidate>
+                {% csrf_token %}
+
+                <!-- Name Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                            First Name <span class="text-emerald-600">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                            Last Name
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Username <span class="text-emerald-600">*</span>
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Email Address <span class="text-emerald-600">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Password 1 -->
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Password <span class="text-emerald-600">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.password1.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Password 2 -->
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                        Confirm Password <span class="text-emerald-600">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-700 to-forest-800 hover:from-emerald-800 hover:to-forest-900 shadow-lg shadow-forest-900/20 hover:shadow-xl transition-all duration-200 active:scale-[0.99]">
+                        <i class="fas fa-leaf text-emerald-300"></i>
+                        <span>Create Account</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Bottom redirect -->
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account?
+                    <a href="{% url 'accounts:login' %}" class="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline">
+                        Log in here
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-6 flex items-center justify-center gap-6 text-xs text-gray-500">
+            <span class="flex items-center gap-1.5"><i class="fas fa-shield-alt text-emerald-600"></i> Private & Secure</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-cloud-upload-alt text-emerald-600"></i> Cloud Saved</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-bolt text-emerald-600"></i> Instant Analysis</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+        Plantify | AI-Powered Smart Green Interior Designer
+        {% endblock %}
+    </title>
+    <!-- SEO -->
+    <meta name="description" content="{% block meta_description %}Plantify uses AI to transform your space into a thriving green haven. Upload a photo, get personalized plant recommendations, placement tips, and a visual makeover preview.{% endblock %}">
+    <meta name="keywords" content="AI plant recommendation, smart green interior, urban gardening, indoor plants, plant placement AI, low maintenance plants">
+    <meta name="author" content="Plantify">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Plantify | AI-Powered Smart Green Interior Designer" />
+    <meta property="og:description" content="Upload a photo of your room. Get AI-powered plant recommendations and a visual makeover preview." />
+    <meta property="og:site_name" content="Plantify" />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#14532d" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (single CDN, not both) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#14532d',
+                        accent: '#14532d',
+                        secondary: '#1c1c1c',
+                        leaf: '#22c55e',
+                        soil: '#78350f',
+                        forest: {
+                            50: '#f4f9f4',
+                            100: '#e6f2e6',
+                            200: '#cde4cd',
+                            300: '#a4cea5',
+                            400: '#73b174',
+                            500: '#4f9351',
+                            600: '#3d753f',
+                            700: '#325e33',
+                            800: '#2b4c2c',
+                            900: '#253f26',
+                            950: '#102211',
+                        },
+                        sage: {
+                            50: '#f6f8f4',
+                            100: '#e9f0e4',
+                            200: '#d4e1cb',
+                            300: '#b1c9a4',
+                            400: '#86aa75',
+                            500: '#648d54',
+                            600: '#4e7140',
+                            700: '#3f5a35',
+                            800: '#34492d',
+                            900: '#2c3d27',
+                            950: '#152012',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --swiper-navigation-size: 16px;
+            --color-primary: #14532d;
+            --color-leaf: #22c55e;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Swiper hero */
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            max-height: 900px;
+        }
+
+        .swiper-pagination-bullet {
+            background-color: #fff;
+            opacity: 0.7;
+            width: 10px;
+            height: 10px;
+        }
+        .swiper-pagination-bullet-active {
+            background-color: var(--color-leaf);
+            opacity: 1;
+        }
+        .swiper-button-prev,
+        .swiper-button-next {
+            background-color: rgba(0, 0, 0, 0.4);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .swiper-button-prev:hover,
+        .swiper-button-next:hover {
+            background-color: var(--color-primary);
+        }
+
+        /* Sidebar */
+        .sidebar-transition { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .backdrop-transition { transition: opacity 0.25s ease; }
+        .menu-item { transition: all 0.2s ease; }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 24rem;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        }
+        .toast.success { background: #dcfce7; color: #14532d; border-left: 4px solid #22c55e; }
+        .toast.error   { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .toast.info    { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .toast.warning { background: #fef9c3; color: #713f12; border-left: 4px solid #eab308; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(100%); }
+        }
+
+        /* Leaf pattern for accents */
+        .leaf-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 18.307c1.33.902 1.184 2.728-.326 4.078-1.51 1.35-3.906 1.687-5.236.785-1.33-.902-1.184-2.728.326-4.078 1.51-1.35 3.906-1.687 5.236-.785zM30.59 7.615c1.33.902 1.184 2.728-.326 4.078-1.51 1.35-3.906 1.687-5.236.785-1.33-.902-1.184-2.728.326-4.078 1.51-1.35 3.906-1.687 5.236-.785zM9.412 21.429c1.33.902 1.184 2.728-.326 4.078-1.51 1.35-3.906 1.687-5.236.785-1.33-.902-1.184-2.728.326-4.078 1.51-1.35 3.906-1.687 5.236-.785z' fill='%233d753f' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        /* Focus ring */
+        :focus-visible { outline: 2px solid var(--color-leaf); outline-offset: 2px; }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 font-sans text-secondary antialiased">
+
+    {% include 'includes/navbar.html' %}
+
+    <!-- Django Messages → Toasts -->
+    {% if messages %}
+    <div class="toast-container" id="toastContainer" role="alert" aria-live="polite">
+        {% for message in messages %}
+        <div class="toast {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}"
+             data-auto-dismiss="4500">
+            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+            <button class="ml-auto text-current opacity-60 hover:opacity-100" onclick="this.closest('.toast').remove()">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block body %}
+    {% block content %}
+    {% endblock content %}
+    {% endblock body %}
+
+    {% include 'includes/footer.html' %}
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+    // ---- Swiper (only if .swiper exists on the page) ----
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.querySelector('.swiper')) {
+            new Swiper('.swiper', {
+                loop: true,
+                autoplay: { delay: 5500, disableOnInteraction: false },
+                pagination: { el: '.swiper-pagination', clickable: true },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                effect: 'fade',
+                fadeEffect: { crossFade: true },
+            });
+        }
+
+        // ---- Mobile sidebar ----
+        const menuButton   = document.getElementById('mobile-menu-button');
+        const closeButton  = document.getElementById('close-sidebar');
+        const container    = document.getElementById('sidebar-container');
+        const sidebar      = document.getElementById('mobile-sidebar');
+        const backdrop     = document.getElementById('sidebar-backdrop');
+
+        function openSidebar() {
+            if (!container) return;
+            container.classList.remove('hidden');
+            void container.offsetWidth;
+            backdrop && backdrop.classList.add('opacity-100');
+            sidebar  && sidebar.classList.remove('-translate-x-full');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            if (!container) return;
+            backdrop && backdrop.classList.remove('opacity-100');
+            sidebar  && sidebar.classList.add('-translate-x-full');
+            setTimeout(() => {
+                container.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        menuButton  && menuButton.addEventListener('click', openSidebar);
+        closeButton && closeButton.addEventListener('click', closeSidebar);
+        backdrop    && backdrop.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && container && !container.classList.contains('hidden')) {
+                closeSidebar();
+            }
+        });
+
+        // ---- Auto-dismiss toasts ----
+        document.querySelectorAll('[data-auto-dismiss]').forEach(toast => {
+            const delay = parseInt(toast.dataset.autoDismiss) || 5000;
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, delay);
+        });
+
+        // ---- Smooth scroll for in-page anchors ----
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    closeSidebar();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

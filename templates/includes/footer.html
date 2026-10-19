@@ -1,0 +1,92 @@
+<!-- Footer Top Banner -->
+<div class="w-full bg-forest-900 border-t border-forest-800 text-white px-4 sm:px-6 py-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🌿</span>
+            <div>
+                <h3 class="text-lg font-bold font-playfair tracking-wide text-white">PLANTIFY AI</h3>
+                <p class="text-xs text-forest-200">AI-Powered Smart Green Interior Designer</p>
+            </div>
+        </div>
+        <p class="text-xs sm:text-sm text-forest-200 max-w-xl">
+            Upload a room photo to discover light-compatible plants, smart placement blueprints, and photorealistic AI makeover previews before spending a single rupee.
+        </p>
+        <a href="{% url 'utility:upload' %}" class="shrink-0 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-forest-950 font-bold text-xs shadow-md transition">
+            Scan Room Now &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Footer Main -->
+<footer class="bg-forest-950 text-white py-12 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Brand Column -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-500 text-forest-950 flex items-center justify-center font-bold text-sm">🌿</span>
+                    <span class="text-xl font-extrabold font-playfair text-white tracking-tight">Plantify</span>
+                </div>
+                <p class="text-xs text-forest-200 leading-relaxed">
+                    Helping urban dwellers and modern homeowners transform low-light, compact spaces into thriving, easy-to-maintain indoor sanctuaries.
+                </p>
+                <div class="flex items-center gap-3 text-forest-300 text-sm pt-2">
+                    <span class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center hover:text-white transition"><i class="fab fa-instagram"></i></span>
+                    <span class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center hover:text-white transition"><i class="fab fa-twitter"></i></span>
+                    <span class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center hover:text-white transition"><i class="fab fa-github"></i></span>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h4 class="font-bold text-sm text-white uppercase tracking-wider mb-4">Quick Navigation</h4>
+                <ul class="space-y-2.5 text-xs text-forest-200">
+                    <li><a href="{% url 'home:index' %}" class="hover:text-emerald-400 transition">Home</a></li>
+                    <li><a href="{% url 'utility:upload' %}" class="hover:text-emerald-400 transition">Upload Room Photo</a></li>
+                    <li><a href="{% url 'home:aboutus' %}" class="hover:text-emerald-400 transition">About Us</a></li>
+                    <li><a href="{% url 'home:contactus' %}" class="hover:text-emerald-400 transition">Contact & Support</a></li>
+                </ul>
+            </div>
+
+            <!-- Member Features -->
+            <div>
+                <h4 class="font-bold text-sm text-white uppercase tracking-wider mb-4">Member Features</h4>
+                <ul class="space-y-2.5 text-xs text-forest-200">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard:index' %}" class="hover:text-emerald-400 transition">My Dashboard</a></li>
+                    <li><a href="{% url 'dashboard:history' %}" class="hover:text-emerald-400 transition">Saved Room Scans</a></li>
+                    <li><a href="{% url 'dashboard:favorites' %}" class="hover:text-emerald-400 transition">Plant Wishlist</a></li>
+                    <li><a href="{% url 'accounts:profile' %}" class="hover:text-emerald-400 transition">Account & Preferences</a></li>
+                    {% else %}
+                    <li><a href="{% url 'accounts:register' %}" class="hover:text-emerald-400 transition">Create Free Account</a></li>
+                    <li><a href="{% url 'accounts:login' %}" class="hover:text-emerald-400 transition">Member Sign In</a></li>
+                    <li><a href="{% url 'utility:upload' %}" class="hover:text-emerald-400 transition">Instant Room Scan</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Trust & Policy -->
+            <div>
+                <h4 class="font-bold text-sm text-white uppercase tracking-wider mb-4">Legal & Privacy</h4>
+                <ul class="space-y-2.5 text-xs text-forest-200">
+                    <li><a href="{% url 'home:privacy_policy' %}" class="hover:text-emerald-400 transition">Privacy Policy</a></li>
+                    <li><a href="{% url 'home:terms_of_service' %}" class="hover:text-emerald-400 transition">Terms of Service</a></li>
+                    <li><a href="{% url 'home:refund_policy' %}" class="hover:text-emerald-400 transition">Refund Policy</a></li>
+                </ul>
+                <div class="mt-4 p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] text-forest-300">
+                    <p><i class="fas fa-microchip text-emerald-400 mr-1"></i> Powered by OpenCV & Cloudflare Workers AI</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom bar -->
+        <div class="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-forest-300 gap-4">
+            <p>&copy; 2026 Plantify. All rights reserved. Crafted with 🌿 for urban plant enthusiasts.</p>
+            <div class="flex space-x-6">
+                <a href="{% url 'home:privacy_policy' %}" class="hover:text-white transition">Privacy</a>
+                <a href="{% url 'home:terms_of_service' %}" class="hover:text-white transition">Terms</a>
+                <a href="{% url 'home:contactus' %}" class="hover:text-white transition">Contact</a>
+            </div>
+        </div>
+    </div>
+</footer>

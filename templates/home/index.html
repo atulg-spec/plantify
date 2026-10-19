@@ -1,0 +1,309 @@
+{% extends 'home/base.html' %}
+
+{% block title %}Plantify — AI-Powered Smart Green Interior Designer{% endblock %}
+{% block meta_description %}Transform any compact or low-light room into a lush, thriving indoor oasis. Plantify uses computer vision and generative AI to recommend, place, and visualize plants in your exact space.{% endblock %}
+
+{% block body %}
+<!-- Hero Section with Swiper -->
+<section id="home" class="relative overflow-hidden bg-forest-950">
+    <div class="swiper relative h-[560px] sm:h-[640px] lg:h-[700px]">
+        <div class="swiper-wrapper">
+            <!-- Slide 1: Core Value Prop -->
+            <div class="swiper-slide relative">
+                <img src="https://images.unsplash.com/photo-1545241047-6083a3684587?w=1600&q=80"
+                     alt="AI Green Interior Designer" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-forest-950 via-black/55 to-black/35 flex items-center">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        <div class="max-w-3xl space-y-6">
+                            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 backdrop-blur-md">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Computer Vision + Generative AI
+                            </span>
+                            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-playfair leading-tight">
+                                Your Space. Your Plants. <br><span class="text-emerald-400 italic">Photorealistically Matched.</span>
+                            </h1>
+                            <p class="text-base sm:text-lg text-gray-200 leading-relaxed max-w-2xl">
+                                Upload a single photo of your living room, balcony, or desk. Plantify analyzes your room lighting, detects ideal placement spots, and renders a realistic green makeover preview before you spend a rupee.
+                            </p>
+                            <div class="flex flex-wrap items-center gap-4 pt-2">
+                                <a href="{% url 'utility:upload' %}"
+                                   class="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-leaf text-forest-950 font-bold text-sm sm:text-base shadow-xl hover:shadow-emerald-500/20 hover:from-emerald-400 hover:to-leaf transition transform active:scale-95 inline-flex items-center gap-2.5">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Scan Your Room Now</span>
+                                </a>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'dashboard:index' %}"
+                                   class="px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm sm:text-base border border-white/20 backdrop-blur-md transition inline-flex items-center gap-2">
+                                    <i class="fas fa-th-large text-emerald-300"></i>
+                                    <span>My Dashboard</span>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'accounts:register' %}"
+                                   class="px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm sm:text-base border border-white/20 backdrop-blur-md transition inline-flex items-center gap-2">
+                                    <span>Create Free Account</span>
+                                    <i class="fas fa-arrow-right text-xs"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Smart Light Analysis -->
+            <div class="swiper-slide relative">
+                <img src="https://images.unsplash.com/photo-1463320726281-696a485928c7?w=1600&q=80"
+                     alt="Smart Light and Space Analysis" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-forest-950 via-black/55 to-black/35 flex items-center">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        <div class="max-w-3xl space-y-6">
+                            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 backdrop-blur-md">
+                                <i class="fas fa-sun text-emerald-400 text-xs"></i>
+                                Intelligent Lux Estimator
+                            </span>
+                            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-playfair leading-tight">
+                                Stop Guessing. <br><span class="text-emerald-400 italic">Start Growing Confidently.</span>
+                            </h2>
+                            <p class="text-base sm:text-lg text-gray-200 leading-relaxed max-w-2xl">
+                                Never kill an indoor plant again. Our vision model reads luminance curves and window orientations to select varieties naturally adapted to your room's light.
+                            </p>
+                            <div class="pt-2">
+                                <a href="{% url 'utility:upload' %}"
+                                   class="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-leaf text-forest-950 font-bold text-sm sm:text-base shadow-xl transition inline-flex items-center gap-2.5">
+                                    <i class="fas fa-sparkles"></i>
+                                    <span>Analyze Room Lighting</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Photorealistic AI Makeover -->
+            <div class="swiper-slide relative">
+                <img src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=1600&q=80"
+                     alt="Visual Green Makeover Preview" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-forest-950 via-black/55 to-black/35 flex items-center">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        <div class="max-w-3xl space-y-6">
+                            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 backdrop-blur-md">
+                                <i class="fas fa-wand-magic-sparkles text-emerald-400 text-xs"></i>
+                                FLUX.2 Klein 4B Vision Transform
+                            </span>
+                            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-playfair leading-tight">
+                                See The Green Transformation <br><span class="text-emerald-400 italic">Before Purchasing.</span>
+                            </h2>
+                            <p class="text-base sm:text-lg text-gray-200 leading-relaxed max-w-2xl">
+                                Cloudflare Workers AI generates photorealistic preview renders of your room decorated with statement floor palms, trailing pothos, and stylish planters.
+                            </p>
+                            <div class="pt-2">
+                                <a href="{% url 'utility:upload' %}"
+                                   class="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-leaf text-forest-950 font-bold text-sm sm:text-base shadow-xl transition inline-flex items-center gap-2.5">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Generate AI Makeover</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+    </div>
+</section>
+
+<!-- Trust Metric Strip -->
+<section class="bg-white border-y border-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div class="space-y-1">
+                <div class="text-2xl sm:text-3xl font-extrabold text-forest-950 font-playfair">10,000+</div>
+                <p class="text-xs text-gray-500 font-medium">Urban Rooms Styled</p>
+            </div>
+            <div class="space-y-1">
+                <div class="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-playfair">98.4%</div>
+                <p class="text-xs text-gray-500 font-medium">Plant Survival Rate</p>
+            </div>
+            <div class="space-y-1">
+                <div class="text-2xl sm:text-3xl font-extrabold text-forest-950 font-playfair">120+</div>
+                <p class="text-xs text-gray-500 font-medium">Indian & Global Species</p>
+            </div>
+            <div class="space-y-1">
+                <div class="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-playfair">&lt; 3 Sec</div>
+                <p class="text-xs text-gray-500 font-medium">Instant AI Processing</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-20 bg-forest-50/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 mb-3 border border-emerald-200">
+                Simple 3-Step Process
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 font-playfair tracking-tight">
+                From Blank Room to Thriving Haven
+            </h2>
+            <p class="text-sm text-gray-600 mt-2">
+                Say goodbye to dying plants and wasted nursery budgets. Our end-to-end intelligent pipeline guarantees aesthetic and botanical compatibility.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="bg-white rounded-3xl p-8 border border-forest-100 shadow-sm hover:shadow-md transition relative group">
+                <div class="w-14 h-14 rounded-2xl bg-forest-800 text-emerald-300 flex items-center justify-center text-xl font-bold mb-6 shadow-md group-hover:scale-110 transition duration-300">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <span class="text-xs uppercase font-bold tracking-widest text-emerald-700 block mb-1">Step 01</span>
+                <h3 class="text-xl font-bold text-gray-900 font-playfair">Upload Any Room Photo</h3>
+                <p class="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Snap a normal photo of your living room, balcony, study desk, or bedroom. Set your preferred budget and care routine level.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="bg-white rounded-3xl p-8 border border-forest-100 shadow-sm hover:shadow-md transition relative group">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl font-bold mb-6 shadow-md group-hover:scale-110 transition duration-300">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <span class="text-xs uppercase font-bold tracking-widest text-emerald-700 block mb-1">Step 02</span>
+                <h3 class="text-xl font-bold text-gray-900 font-playfair">OpenCV Vision & YOLO Detection</h3>
+                <p class="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Our vision engine measures lighting curves, spots windows, desks, and empty floor zones, and scores plants against our botanical database.
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="bg-white rounded-3xl p-8 border border-forest-100 shadow-sm hover:shadow-md transition relative group">
+                <div class="w-14 h-14 rounded-2xl bg-forest-900 text-leaf flex items-center justify-center text-xl font-bold mb-6 shadow-md group-hover:scale-110 transition duration-300">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <span class="text-xs uppercase font-bold tracking-widest text-emerald-700 block mb-1">Step 03</span>
+                <h3 class="text-xl font-bold text-gray-900 font-playfair">Photorealistic AI Simulation</h3>
+                <p class="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Review curated plant care guides, pricing, placement maps, and generate a photorealistic FLUX AI preview of your decorated room!
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="{% url 'utility:upload' %}" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-forest-800 hover:bg-forest-900 text-white font-semibold text-sm shadow-md transition">
+                <i class="fas fa-leaf text-emerald-300"></i>
+                <span>Get Started in 30 Seconds</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Grid Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-forest-50 text-forest-800 mb-3 border border-forest-100">
+                Engineering Excellence
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 font-playfair tracking-tight">
+                Designed for Urban Living
+            </h2>
+            <p class="text-sm text-gray-600 mt-2">
+                Engineered specifically for apartments, rented flats, and busy schedules.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Natural Light Profiling</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Calculates average grayscale luminance, highlights window glare zones, and flags low-light vs bright indirect areas.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Air Purification Index</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Prioritizes NASA-tested indoor varieties like Snake Plants and Peace Lilies that filter benzene, formaldehyde, and airborne dust.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-tint-slash"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Low-Maintenance Filter</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Frequent traveler? Filter specifically for drought-tolerant succulents and resilient ZZ plants requiring water only once a month.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Budget Transparency</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Real nursery pricing ranges (₹300 - ₹3,500) so you know estimated plant and planter costs upfront before shopping.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-vector-square"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Architectural Zone Mapping</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Identifies Floor Corner, Desk, Wall Shelf, and Window Ledge zones with bounding coordinate overlays on your photo.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-gray-100 hover:border-emerald-200 transition bg-gradient-to-b from-white to-forest-50/20">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-4">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Saved Scans & Wishlist</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Create an account to save your room scans, organize multiple rooms across your home, and heart your favorite species.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-16 bg-gradient-to-r from-forest-950 via-forest-900 to-emerald-950 text-white relative overflow-hidden">
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-emerald-300 border border-white/15">
+            Instant Scan &bull; No credit card needed
+        </span>
+        <h2 class="text-3xl sm:text-5xl font-extrabold font-playfair tracking-tight">
+            Ready to give your room the green makeover it deserves?
+        </h2>
+        <p class="text-sm sm:text-base text-forest-200 max-w-xl mx-auto">
+            Take a photo with your phone right now. Within seconds, get a complete botanical recommendation and photorealistic AI styling preview.
+        </p>
+        <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
+            <a href="{% url 'utility:upload' %}" class="px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-forest-950 font-bold text-base shadow-xl transition transform active:scale-95 inline-flex items-center gap-2">
+                <i class="fas fa-camera"></i>
+                <span>Upload Room Photo</span>
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'accounts:register' %}" class="px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-base border border-white/20 transition">
+                Create Account
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock body %}

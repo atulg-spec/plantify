@@ -1,0 +1,249 @@
+<!-- Navigation -->
+<nav class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <!-- Left: Logo & Mobile Hamburger -->
+            <div class="flex items-center gap-3">
+                <button id="mobile-menu-button" type="button" class="md:hidden text-gray-700 hover:text-emerald-700 p-2 rounded-lg hover:bg-forest-50 transition focus:outline-none" aria-label="Open mobile menu">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <a href="{% url 'home:index' %}" class="flex items-center gap-2 group">
+                    <span class="w-8 h-8 rounded-xl bg-forest-800 text-emerald-300 flex items-center justify-center font-bold text-base shadow-sm group-hover:scale-105 transition">
+                        🌿
+                    </span>
+                    <span class="text-xl font-extrabold text-forest-950 tracking-tight font-playfair">
+                        PLANTIFY
+                    </span>
+                </a>
+            </div>
+
+            <!-- Center: Desktop Links -->
+            <div class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium text-gray-700">
+                <a href="{% url 'home:index' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">Home</a>
+                <a href="{% url 'utility:upload' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">Scan Space</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:index' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">Dashboard</a>
+                <a href="{% url 'dashboard:favorites' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">Wishlist</a>
+                {% endif %}
+                <a href="{% url 'home:aboutus' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">About</a>
+                <a href="{% url 'home:contactus' %}" class="px-3 py-2 rounded-xl hover:text-forest-900 hover:bg-forest-50 transition">Contact</a>
+            </div>
+
+            <!-- Right: Auth Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                {% if user.is_authenticated %}
+                    <!-- User Profile Dropdown Button -->
+                    <div class="relative" id="userDropdownContainer">
+                        <button id="userMenuButton" type="button" class="flex items-center gap-2 p-1.5 sm:px-3 sm:py-2 rounded-2xl hover:bg-forest-50 transition border border-gray-200">
+                            <span class="w-7 h-7 rounded-xl bg-forest-800 text-emerald-300 flex items-center justify-center font-bold text-xs shadow-sm">
+                                {{ user.first_name|default:user.username|slice:":1"|upper }}
+                            </span>
+                            <span class="hidden sm:inline text-xs font-semibold text-gray-800 max-w-[110px] truncate">
+                                {{ user.first_name|default:user.username }}
+                            </span>
+                            <i class="fas fa-chevron-down text-[10px] text-gray-400"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="userMenuDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 text-xs">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="font-bold text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-[11px] text-gray-400 truncate">{{ user.email }}</p>
+                            </div>
+                            <div class="py-1">
+                                <a href="{% url 'dashboard:index' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-forest-50 hover:text-forest-900 transition">
+                                    <i class="fas fa-th-large text-emerald-600 w-4"></i> Dashboard
+                                </a>
+                                <a href="{% url 'dashboard:history' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-forest-50 hover:text-forest-900 transition">
+                                    <i class="fas fa-history text-emerald-600 w-4"></i> Saved Scans
+                                </a>
+                                <a href="{% url 'dashboard:favorites' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-forest-50 hover:text-forest-900 transition">
+                                    <i class="fas fa-heart text-rose-500 w-4"></i> Plant Wishlist
+                                </a>
+                                <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-forest-50 hover:text-forest-900 transition">
+                                    <i class="fas fa-sliders-h text-emerald-600 w-4"></i> Profile & Defaults
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-100 pt-1">
+                                <form method="POST" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50 transition text-left">
+                                        <i class="fas fa-sign-out-alt w-4"></i> Sign Out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'utility:upload' %}" class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs font-semibold shadow-sm transition">
+                        <i class="fas fa-camera text-emerald-300"></i>
+                        <span>Scan Space</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-xs sm:text-sm font-semibold text-gray-700 hover:text-emerald-700 px-3 py-2 transition">
+                        Log In
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition">
+                        <span>Get Started Free</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar with Backdrop -->
+    <div id="sidebar-container" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity opacity-0"></div>
+
+        <!-- Sidebar Panel -->
+        <div id="mobile-sidebar" class="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out flex flex-col z-50">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between p-5 border-b border-gray-100">
+                <a href="{% url 'home:index' %}" class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-forest-800 text-emerald-300 flex items-center justify-center font-bold text-base">🌿</span>
+                    <span class="text-xl font-extrabold text-forest-950 font-playfair">PLANTIFY</span>
+                </a>
+                <button id="close-sidebar" type="button" class="p-2 rounded-xl text-gray-500 hover:bg-gray-100 transition" aria-label="Close menu">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- User Status Card if Logged In -->
+            {% if user.is_authenticated %}
+            <div class="p-4 mx-4 mt-4 rounded-2xl bg-forest-50 border border-forest-100 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-forest-800 text-emerald-300 flex items-center justify-center font-bold text-sm shrink-0">
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </span>
+                <div class="truncate">
+                    <p class="font-bold text-xs text-gray-900 truncate">{{ user.first_name|default:user.username }}</p>
+                    <p class="text-[11px] text-gray-500 truncate">{{ user.email }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Sidebar Navigation Menu -->
+            <div class="flex-1 overflow-y-auto py-4 px-4 space-y-1">
+                <a href="{% url 'home:index' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-home text-emerald-600 w-5"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{% url 'utility:upload' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-camera text-emerald-600 w-5"></i>
+                    <span>Scan Room Photo</span>
+                </a>
+
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:index' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-th-large text-emerald-600 w-5"></i>
+                    <span>My Dashboard</span>
+                </a>
+                <a href="{% url 'dashboard:history' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-history text-emerald-600 w-5"></i>
+                    <span>Scanned Spaces</span>
+                </a>
+                <a href="{% url 'dashboard:favorites' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-heart text-rose-500 w-5"></i>
+                    <span>Plant Wishlist</span>
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-sliders-h text-emerald-600 w-5"></i>
+                    <span>Profile & Preferences</span>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'home:aboutus' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-info-circle text-emerald-600 w-5"></i>
+                    <span>About Us</span>
+                </a>
+                <a href="{% url 'home:contactus' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 rounded-xl hover:bg-forest-50 hover:text-emerald-800 transition">
+                    <i class="fas fa-envelope text-emerald-600 w-5"></i>
+                    <span>Contact Us</span>
+                </a>
+            </div>
+
+            <!-- Sidebar Footer Auth Buttons -->
+            <div class="p-4 border-t border-gray-100">
+                {% if user.is_authenticated %}
+                <form method="POST" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-200 text-red-600 font-semibold text-sm hover:bg-red-50 transition">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </form>
+                {% else %}
+                <div class="space-y-2">
+                    <a href="{% url 'accounts:register' %}" class="block w-full text-center py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-semibold text-sm shadow transition">
+                        Create Free Account
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="block w-full text-center py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition">
+                        Log In
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile Sidebar Controls
+        const menuButton = document.getElementById('mobile-menu-button');
+        const closeButton = document.getElementById('close-sidebar');
+        const sidebarContainer = document.getElementById('sidebar-container');
+        const sidebar = document.getElementById('mobile-sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        function openSidebar() {
+            if (!sidebarContainer) return;
+            sidebarContainer.classList.remove('hidden');
+            void sidebarContainer.offsetWidth;
+            backdrop.classList.add('opacity-100');
+            sidebar.classList.remove('-translate-x-full');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            if (!sidebarContainer) return;
+            backdrop.classList.remove('opacity-100');
+            sidebar.classList.add('-translate-x-full');
+            setTimeout(() => {
+                sidebarContainer.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        if (menuButton) menuButton.addEventListener('click', openSidebar);
+        if (closeButton) closeButton.addEventListener('click', closeSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && sidebarContainer && !sidebarContainer.classList.contains('hidden')) {
+                closeSidebar();
+            }
+        });
+
+        // Desktop User Dropdown Menu
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+
+        if (userMenuButton && userMenuDropdown) {
+            userMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userMenuDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!userMenuDropdown.contains(e.target) && !userMenuButton.contains(e.target)) {
+                    userMenuDropdown.classList.add('hidden');
+                }
+            });
+        }
+    });
+</script>
