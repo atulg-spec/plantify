@@ -667,7 +667,67 @@ def create_visualization_prompt(analysis_data):
     light_cond = lighting.get("condition", "Medium") if isinstance(lighting, dict) else str(lighting)
     light_nat = lighting.get("natural_light_prob", "Medium") if isinstance(lighting, dict) else "Medium"
 
-    plants = [plant.get("name") for plant in recommendations]
+    plants = ", ".join(plant.get("name", "") for plant in recommendations if plant.get("name"))
+
+    print("plants")
+    print(plants)
+
+    KEEP = (
+        "Preserve the exact same space shown in the original photo, whether it is "
+        "a bedroom, living room, office, workspace, balcony, terrace, kitchen, "
+        "hallway, garden, or any other indoor or outdoor area. Keep the same "
+        "camera angle, perspective, walls, wall colors, lighting, ceiling, floor, windows, doors, "
+        "railings, furniture, existing architectural features, and proportions. "
+        "Do not change the layout or structure of the space. Do not add people, "
+        "text, labels, or unnecessary furniture."
+    )
+
+    prompt2 = f"""
+Edit this photo into a photorealistic, lush, beautifully designed green space.
+\n
+Preserve the exact same space shown in the original photo, whether it is a bedroom, living room, office, workspace, balcony, terrace, kitchen, hallway, garden, or any other indoor or outdoor area. Keep the same camera angle, perspective, walls, wall colors, lighting, ceiling, floor, windows, doors, railings, furniture, existing architectural features, and proportions. Do not change the layout or structure of the space. Do not add people, text, labels, or unnecessary furniture.\n
+\n
+Plants: transform the area with a rich but organized collection of healthy\n
+plants in coordinated cream and white pots. Use a thoughtful mix of {plants} and other\n
+visually complementary foliage plants.\n
+\n
+Adapt the arrangement to the actual space shown in the photograph. For a\n
+balcony or terrace, arrange plants along suitable ledges, corners and\n
+railings, with hanging planters where appropriate. For a living room or\n
+bedroom, use floor corners, windowsills, existing shelves and suitable\n
+side-table surfaces. For an office or workspace, add appropriately sized\n
+plants to available corners, shelves and desk areas without obstructing work.\n
+For a kitchen, hallway, garden or any other space, use onlyplacement options\n
+that naturally fit the environment.\n
+\n
+Add a tall or another appropriately sized statement plant where\n
+space permits, alongside patterned foliage plants and ferns in suitable\n
+locations. Use trailing {plants} or other cascading plants in hanging planters\n
+or on elevated shelves where appropriate. Add small wall-mounted planters\n
+only when suitable wall space and mounting locations are available.\n
+\n
+Make the greenery feel intentionally designed in {style} style, with a harmonious combination\n
+of plant heights, leaf shapes, pot styles and colors. Maintain clear walking\n
+paths, usable work surfaces and the original functionality of the space.\n
+Avoid overcrowding, random placement, excessive hanging vines or repetitive\n
+rows of identical plants.\n
+\n
+Everything must look like a real photograph, with realistic plant sizes,\n
+natural lighting, accurate shadows, proper perspective and believable\n
+contact between every pot, plant and supporting surface. The final result\n
+should look professionally styled, fresh, cohesive and naturally integrated\n
+into the original environment.\n
+\n
+Plant Placement Rules: Place plants only in realistic, functional locations. \n
+Never place plants on beds, sofas, chairs, or other unsuitable furniture surfaces. \n
+Keep walking paths, doorways, entrances, exits, and access points completely clear. \n
+Never create floating plant pots, unsupported planters, or suspended plants without clearly visible, realistic mounting or hanging hardware. \n
+Every pot must rest securely on a visible floor, shelf, stand, or other stable surface. \n
+Place plants naturally in corners, beside walls, near windows, or in unused spaces. \n
+Preserve the original room layout and ensure every placement is physically realistic, stable, and aesthetically organized.
+"""
+
+
 
 
     prompt = f"""
@@ -752,8 +812,7 @@ Make the smallest possible modification to the original image.
 Output only the edited photorealistic room image.
 """
 
-    print(prompt)
-    return prompt
+    return prompt2
 
 
 
